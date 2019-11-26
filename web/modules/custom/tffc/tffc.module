@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * @file
+ * Contains tffc.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ *
+ * @param $route_name
+ * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+ */
+function tffc_help($route_name, RouteMatchInterface $route_match) {
+
+}
+
+/**
+ * Implements hook_theme().
+ */
+function tffc_theme() {
+  $info['points_countdown'] = [
+    'variables' => [
+      'total_points' => 0,
+      'options' => [
+        'realtime' => false,
+      ],
+    ],
+  ];
+
+  return $info;
+}

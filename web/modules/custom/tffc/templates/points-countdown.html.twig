@@ -1,0 +1,10 @@
+{% set classes = [
+  'field-points',
+  options.realtime ? 'field-points-realtime' : '',
+  options.calculate ? 'field-points-calculate' : '',
+  ]
+%}
+{{ attach_library('tffc/tffc.countdown') }}
+<div {{ attributes.addClass(classes) }} data-start="{{ total_points }}" data-end="{{ options.end }}" data-interval="{{ options.speed }}">
+  <span class="number">{{ total_points }}</span>
+</div>

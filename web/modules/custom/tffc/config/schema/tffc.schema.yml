@@ -1,0 +1,19 @@
+field.formatter.settings.field_tffc_points_countdown_formatter:
+  type: mapping
+  label: 'Points countdown formatter'
+  mapping:
+    realtime:
+      type: int
+      label: 'Realtime'
+    calculate:
+      type: int
+      label: 'Calculate'
+    time:
+      type: string
+      label: 'Calculate'
+    end:
+      type: int
+      label: 'End'
+    speed:
+      type: int
+      label: 'Speed'

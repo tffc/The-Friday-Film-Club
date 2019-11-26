@@ -1,0 +1,6 @@
+name: The Friday Film Club
+description: 'The Friday Film Club Core Module'
+type: module
+core: 8.x
+package: The Friday Film Club
+#configure: tffc.config

@@ -1,0 +1,7 @@
+tffc.countdown:
+  version: 1.x
+  js:
+    js/tffc.countdown.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings

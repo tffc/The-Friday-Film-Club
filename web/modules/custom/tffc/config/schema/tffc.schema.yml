@@ -17,4 +17,3 @@ field.formatter.settings.field_tffc_points_countdown_formatter:
     speed:
       type: int
       label: 'Speed'
-  =

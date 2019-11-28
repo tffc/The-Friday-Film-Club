@@ -10,6 +10,8 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\Entity\Node;
 use Drupal\tffc\Tffc;
 
+define('TFFC_REPLY_BOT_ID', 2);
+
 /**
  * Implements hook_help().
  *
@@ -42,6 +44,14 @@ function tffc_theme() {
  * @param $comment
  */
 function tffc_comment_presave(&$comment) {
+  $reply_uid = $comment->get('uid')->target_id;
+
+  // we don't want to run a presave if the comment is by the
+  // reply bot (no loopy loops)
+  if ($reply_uid === TFFC_REPLY_BOT_ID) {
+    return;
+  }
+
   // load the current user
   $user = \Drupal::currentUser();
 
@@ -118,6 +128,39 @@ function tffc_comment_presave(&$comment) {
   $comment->set('field_score', $score);
   $comment->set('field_correct', $isCorrect);
   $comment->set('field_guess_count', $guess);
+
+}
+
+/**
+ * Implements hook_aggregator_fetcher_info_alter().
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $comment
+ */
+function tffc_comment_insert(Drupal\Core\Entity\EntityInterface $comment) {
+  $reply_uid = $comment->get('uid')->target_id;
+
+  // we don't want to run a presave if the comment is by the
+  // reply bot (no loopy loops)
+  if ($reply_uid === TFFC_REPLY_BOT_ID) {
+    return;
+  }
+
+  // load some information from the comments
+  $entity_id = $comment->get('entity_id')->target_id;
+  $isCorrect = $comment->get('field_correct')->value;
+
+  // load the entity it is attached too
+  $entity = Node::load($entity_id);
+
+  // get the cid & nid
+  $cid = $comment->id();
+  $nid = $entity->id();
+
+
+  try {
+    _tffc_create_comment_reply($nid, $cid, $isCorrect);
+  } catch (\Drupal\Core\Entity\EntityStorageException $e) {
+  }
 }
 
 /**
@@ -151,4 +194,42 @@ function _tffc_load_comments_by_nid($nid, $uid = FALSE) {
   }
 
   return $comments;
+}
+
+/**
+ * Reply to a comment with correct or wrong information
+ *
+ * @param $entity_id
+ * @param bool $pid
+ * @param bool $correct
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ */
+function _tffc_create_comment_reply($entity_id, $pid = FALSE, $correct = FALSE) {
+  $values = [
+    'entity_type' => 'node',
+    'entity_id' => $entity_id,
+    'field_name' => 'field_answers',
+    'uid' => TFFC_REPLY_BOT_ID,
+    'comment_type' => 'answers',
+    'status' => 1,
+
+    'subject' => $correct ? t('Correct Answer') : t('Wrong Answer'),
+    'field_reply' => [
+      'format' => 'basic_html',
+      'value' => t('test'),
+    ],
+  ];
+
+  // if we have a pid
+  // lets add it here
+  if ($pid) {
+    $values['pid'] = $pid;
+  }
+
+  // This will create an actual comment entity out of our field values.
+  $comment = Comment::create($values);
+
+  // Last, we actually need to save the comment to the database.
+  $comment->save();
 }

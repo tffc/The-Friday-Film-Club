@@ -5,6 +5,7 @@ namespace Drupal\tffc\Plugin\Field\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\tffc\Tffc;
 
 /**
  * Plugin implementation of the 'field_tffc_points_formatter_value' formatter.
@@ -25,11 +26,11 @@ class PointsCountdownFormatter extends FormatterBase {
   public function settingsSummary() {
     $summary = [];
     $summary[] = $this->t('Displays the points value counting down.');
-    $summary[] = $this->t('Realtime enabled: @realtime',['@realtime' => $this->getSetting('realtime') ? 'True' : 'False']);
-    $summary[] = $this->t('Calculate enabled: @calculate',['@calculate' => $this->getSetting('calculate') ? 'True' : 'False']);
-    $summary[] = $this->t('Time set to: @time',['@time' => $this->getTime()]);
-    $summary[] = $this->t('End value set to: @end',['@end' =>$this->getSetting('end')]);
-    $summary[] = $this->t('Speed value set to: @speed (ms)',['@speed' =>$this->getSetting('speed')]);
+    $summary[] = $this->t('Realtime enabled: @realtime', ['@realtime' => $this->getSetting('realtime') ? 'True' : 'False']);
+    $summary[] = $this->t('Calculate enabled: @calculate', ['@calculate' => $this->getSetting('calculate') ? 'True' : 'False']);
+    $summary[] = $this->t('Time set to: @time', ['@time' => $this->getTime()]);
+    $summary[] = $this->t('End value set to: @end', ['@end' => $this->getSetting('end')]);
+    $summary[] = $this->t('Speed value set to: @speed (ms)', ['@speed' => $this->getSetting('speed')]);
     return $summary;
   }
 
@@ -100,7 +101,7 @@ class PointsCountdownFormatter extends FormatterBase {
 
     $form['end'] = [
       '#title' => $this->t('End value'),
-      '#type' => 'number',
+      '#type' => 'textfield',
       '#description' => $this->t('The points value where it should end the countdown.'),
       '#default_value' => $this->getSetting('end'),
     ];
@@ -132,31 +133,8 @@ class PointsCountdownFormatter extends FormatterBase {
       return $points;
     }
 
-    // new output variable
-    $output = $points;
-
-    // get the timestamp from the time field
-    $time = (int)$this->getTime();
-    $now = time();
-
-    // find the difference between the timestamp and now
-    $diff = $now - $time;
-
-    // output to the points value - diff
-    $output = $output - $diff;
-
-    // make sure the points cannot be after the end value
-    if($output <= $end){
-      $output = $end;
-    }
-
-    // make sure the score cannot go higher than the amount set
-    if($output >= $points){
-      $output = $points;
-    }
-
     // return the value
-    return $output;
+    return Tffc::calculatePoints($this->getTime(), $points, $this->getEndPoints());
   }
 
   /**
@@ -169,6 +147,18 @@ class PointsCountdownFormatter extends FormatterBase {
     $token_service = \Drupal::token();
     $time = $this->getSetting('time');
     return $token_service->replace($time, ['node' => $node]);
+  }
+
+  /**
+   * Gets the end points while passing it through tokens
+   *
+   * @return string
+   */
+  protected function getEndPoints(){
+    $node = \Drupal::routeMatch()->getParameter('node');
+    $token_service = \Drupal::token();
+    $end = $this->getSetting('end');
+    return $token_service->replace($end, ['node' => $node]);
   }
 
 }

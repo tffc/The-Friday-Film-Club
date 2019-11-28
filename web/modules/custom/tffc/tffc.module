@@ -5,7 +5,10 @@
  * Contains tffc.module.
  */
 
+use Drupal\comment\Entity\Comment;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\Entity\Node;
+use Drupal\tffc\Tffc;
 
 /**
  * Implements hook_help().
@@ -25,10 +28,127 @@ function tffc_theme() {
     'variables' => [
       'total_points' => 0,
       'options' => [
-        'realtime' => false,
+        'realtime' => FALSE,
       ],
     ],
   ];
 
   return $info;
+}
+
+/**
+ * hook_comment_presave
+ *
+ * @param $comment
+ */
+function tffc_comment_presave(&$comment) {
+  // load the current user
+  $user = \Drupal::currentUser();
+
+  // will store any penalty scores from previous tries
+  $prev_scores = 0;
+
+  // what guess count are we on.
+  // start at 1 guess :D
+  $guess = 1;
+
+  // load some information from the comments
+  $entity_id = $comment->get('entity_id')->target_id;
+  $answer = $comment->get('field_answer')->target_id;
+
+  // load the entity it is attached too
+  $entity = Node::load($entity_id);
+
+  // get the total score from the question node
+  $score = $entity->get('field_total_points')->total ?? 40000;
+  // the correct answer target id
+  $correct_answer = $entity->get('field_related_film')->target_id ?? -1;
+  // the penalty score for an incorrect value
+  $penalty = $entity->get('field_penalty')->value ?? -2000;
+  // the lowest score you can get
+  $end = $entity->get('field_end_points')->value ?? 0;
+  // get the time the question was created
+  $timestamp = $entity->getCreatedTime();
+
+  // calculate the points val before loading the comments
+  $score_val = Tffc::calculatePoints($timestamp, $score, $end);
+
+  // load all the prev comments for this node by this user
+  $prev_comments = _tffc_load_comments_by_nid($entity->id(), $user->id());
+
+  // now we have all the comments
+  // what we want to do here is go through each comment
+  // getting a list of only wrong answers and adding up the incorrect value scores
+  if ($prev_comments) {
+    foreach ($prev_comments as $prev) {
+      if ($prev->get('field_correct')->value !== "1") {
+        // add together the prev scores
+        $prev_scores += (int) $prev->get('field_score')->value;
+      }
+      // add up the number of guesses
+      // we don't care about right or wrong here
+      $guess++;
+    }
+  }
+  // the answer is correct
+  // mark it as correct and calculate the score
+  if ($answer === $correct_answer) {
+    $isCorrect = TRUE;
+    $score = $score_val + $prev_scores;
+  }
+  else {
+    // if it is incorrect
+    // mark it as not correct and set the score the penalty value
+    $isCorrect = FALSE;
+    $score = $penalty;
+  }
+
+  // get the question title
+  $title = $entity->getTitle();
+
+  // build the comment subject
+  $subject = t('@title - @user | Guess: @count', [
+    '@title' => $title,
+    '@user' => $user->getAccountName(),
+    '@count' => $guess,
+  ]);
+
+  // update the comment fields
+  $comment->setSubject($subject);
+  $comment->set('field_score', $score);
+  $comment->set('field_correct', $isCorrect);
+  $comment->set('field_guess_count', $guess);
+}
+
+/**
+ * Load comments by node id and uid
+ *
+ * @param $nid
+ * @param bool $uid
+ *
+ * @return array|int
+ */
+function _tffc_load_comments_by_nid($nid, $uid = FALSE) {
+  $comments = [];
+
+  $query = \Drupal::entityQuery('comment')
+    ->condition('entity_id', $nid)
+    ->condition('entity_type', 'node');
+
+  // if we want to limit by uid
+  if ($uid) {
+    $query->condition('uid', $uid);
+  }
+
+  // run the query
+  $cids = $query->sort('cid', 'DESC')->execute();
+
+  // load the comment information
+  if (!empty($cids)) {
+    foreach ($cids as $cid) {
+      $comments[] = Comment::load($cid);
+    }
+  }
+
+  return $comments;
 }

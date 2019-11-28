@@ -12,8 +12,9 @@ field.formatter.settings.field_tffc_points_countdown_formatter:
       type: string
       label: 'Calculate'
     end:
-      type: int
+      type: string
       label: 'End'
     speed:
       type: int
       label: 'Speed'
+  =

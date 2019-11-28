@@ -139,8 +139,8 @@ function tffc_comment_presave(&$comment) {
 function tffc_comment_insert(Drupal\Core\Entity\EntityInterface $comment) {
   $reply_uid = $comment->get('uid')->target_id;
 
-  // we don't want to run a presave if the comment is by the
-  // reply bot (no loopy loops)
+  // we don't want to run a insert if the comment is by the
+  // reply bot no replying to it self.
   if ($reply_uid === TFFC_REPLY_BOT_ID) {
     return;
   }
@@ -155,7 +155,6 @@ function tffc_comment_insert(Drupal\Core\Entity\EntityInterface $comment) {
   // get the cid & nid
   $cid = $comment->id();
   $nid = $entity->id();
-
 
   try {
     _tffc_create_comment_reply($nid, $cid, $isCorrect);

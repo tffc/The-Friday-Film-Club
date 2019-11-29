@@ -6267,6 +6267,9 @@ body.toolbar-loading {
   body.toolbar-loading.toolbar {
     margin-bottom: 15px; }
 
+.js-ajax-comments-messages {
+  display: none !important; }
+
 /**
  * jQuery UI autocomplete widget style overrides.
  *

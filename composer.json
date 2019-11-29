@@ -23,6 +23,7 @@
         "drupal/ajax_comments": "^1.0",
         "drupal/bootstrap": "^3.21",
         "drupal/claro": "^1.0",
+        "drupal/comments_order": "^1.0",
         "drupal/console": "^1.0.2",
         "drupal/core": "^8.7.0",
         "drupal/devel": "^2.1",

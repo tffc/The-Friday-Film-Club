@@ -82,12 +82,27 @@ class Tffc {
    * Reply to a comment with correct or wrong information
    *
    * @param $entity_id
+   * @param array $hints - contains the hint questions & the current hint number
    * @param bool $pid
    * @param bool $correct
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public static function create_comment_reply($entity_id, $pid = FALSE, $correct = FALSE) {
+  public static function create_comment_reply($entity_id, array $hints, $pid = FALSE, $correct = FALSE) {
+    $reply = '';
+
+    if ($correct) {
+      $reply .= '<p class="comment-response comment-response-correct">' . self::random_correct_response() . '</p>';
+    }
+    else {
+      $reply .= '<p class="comment-response comment-response-wrong">' . self::random_wrong_response() . '</p>';
+
+      $hint = self::hint_response($hints['options'], $hints['count']);
+      if ($hint) {
+        $reply .= '<code class="comment-response-hint">' . $hint . '</code>';
+      }
+    }
+
     $values = [
       'entity_type' => 'node',
       'entity_id' => $entity_id,
@@ -96,10 +111,10 @@ class Tffc {
       'comment_type' => 'answers',
       'status' => 1,
 
-      'subject' => $correct ? t('Correct Answer') : t('Wrong Answer'),
+      'subject' => $correct ? t('Correct answer') : t('Wrong answer'),
       'field_reply' => [
-        'format' => 'basic_html',
-        'value' => t('test'),
+        'format' => 'full_html',
+        'value' => $reply,
       ],
     ];
 
@@ -114,6 +129,69 @@ class Tffc {
 
     // Last, we actually need to save the comment to the database.
     $comment->save();
+  }
+
+  /**
+   * Returns a random wrong response
+   *
+   * @return mixed
+   */
+  private static function random_wrong_response() {
+    $options = [
+      t('Sorry that is not correct'),
+      t('Nope, not quite right.'),
+      t('Try again...'),
+    ];
+
+    $index = array_rand($options);
+
+    return $options[$index];
+  }
+
+  /**
+   * Returns a random correct response
+   *
+   * @return mixed
+   */
+  private static function random_correct_response() {
+    $options = [
+      t('Yes! Well done!!'),
+      t('Correct, How did you know!?'),
+      t('Exactly!'),
+    ];
+
+    $index = array_rand($options);
+
+    return $options[$index];
+  }
+
+  /**
+   * Returns the hint options
+   *
+   * @param $options
+   * @param $count
+   *
+   * @return mixed
+   */
+  private static function hint_response($options, $count) {
+    $num = count($options);
+
+    // we have not got any more hints so lets return false
+    if ($count > $num) {
+      return FALSE;
+    }
+
+    // remove one for zero indexing
+    $count = $count - 1;
+
+    // check to make sure the option exists
+    // if not return false
+    if (!isset($options[$count]) && !isset($options[$count]['value'])) {
+      return FALSE;
+    }
+
+    // return the found option
+    return $options[$count]['value'];
   }
 
 }

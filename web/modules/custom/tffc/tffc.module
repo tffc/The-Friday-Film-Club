@@ -103,7 +103,13 @@ function tffc_comment_presave(&$comment) {
   // mark it as correct and calculate the score
   if ($answer === $correct_answer) {
     $isCorrect = TRUE;
-    $score = $score_val + $prev_scores;
+    // calculating the score by using the time score
+    // then making sure the overall score is not less than the end value
+    // and not greater than the possible total score
+    $new_score = $score_val + $prev_scores;
+    $new_score = $new_score <= $end ? $end : $new_score;
+    $new_score = $new_score >= $score ? $score : $new_score;
+    $score = $new_score;
   }
   else {
     // if it is incorrect
@@ -147,6 +153,7 @@ function tffc_comment_insert(Drupal\Core\Entity\EntityInterface $comment) {
   // load some information from the comments
   $entity_id = $comment->get('entity_id')->target_id;
   $isCorrect = $comment->get('field_correct')->value;
+  $current_guess = $comment->get('field_guess_count')->value;
 
   // load the entity it is attached too
   $entity = Node::load($entity_id);
@@ -155,9 +162,35 @@ function tffc_comment_insert(Drupal\Core\Entity\EntityInterface $comment) {
   $cid = $comment->id();
   $nid = $entity->id();
 
+  // get the related film id
+  $related_film = $entity->get('field_related_film')->target_id;
+
+  // load the film
+  $film = Node::load($related_film);
+
+  // load the hints
+  $hints = $film->get('field_hints')->getValue();
+
   try {
-    Tffc::create_comment_reply($nid, $cid, $isCorrect);
+    Tffc::create_comment_reply($nid, [
+      'options' => $hints,
+      'count' => $current_guess,
+    ], FALSE, $isCorrect);
   } catch (\Drupal\Core\Entity\EntityStorageException $e) {
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function tffc_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  if ('comment_answers_form' === $form_id) {
+    // change the form submit button
+    $form['actions']['submit']['#value'] = t('Submit');
+    // hide the answer title
+    $form['field_answer']['widget'][0]['target_id']['#title_display'] = 'none';
+    // set the placeholder to the field_answer's title
+    $form['field_answer']['widget'][0]['target_id']['#placeholder'] = $form['field_answer']['widget'][0]['target_id']['#title'];
   }
 }
 

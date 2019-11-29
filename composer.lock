@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ef9c83e0ec077881a69599dbb0d304e7",
+    "content-hash": "06dca317be33c63b10f5fed066d9f478",
     "packages": [
         {
             "name": "alchemy/zippy",
@@ -2296,6 +2296,58 @@
                 "source": "https://git.drupalcode.org/project/claro",
                 "docs": "https://www.drupal.org/docs/8/modules/claro",
                 "issues": "https://www.drupal.org/project/issues/claro"
+            }
+        },
+        {
+            "name": "drupal/comments_order",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/comments_order.git",
+                "reference": "8.x-1.0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/comments_order-8.x-1.0.zip",
+                "reference": "8.x-1.0",
+                "shasum": "59a2cf5b08a7b59b9aa00ed78d098326d993c53a"
+            },
+            "require": {
+                "drupal/core": "*"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "branch-alias": {
+                    "dev-1.x": "1.x-dev"
+                },
+                "drupal": {
+                    "version": "8.x-1.0",
+                    "datestamp": "1532024281",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "lobodacyril",
+                    "homepage": "https://www.drupal.org/user/769176"
+                }
+            ],
+            "description": "This module allows to set order for node comments",
+            "homepage": "https://www.drupal.org/project/comments_order",
+            "keywords": [
+                "Comment",
+                "Drupal"
+            ],
+            "support": {
+                "source": "http://cgit.drupalcode.org/comments_order",
+                "issues": "https://www.drupal.org/project/issues/comments_order"
             }
         },
         {

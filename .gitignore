@@ -26,6 +26,9 @@
 # ignore the database dump
 /db
 
+# dont allow sass cache
+.sass-cache
+
 # General
 .DS_Store
 .AppleDouble

@@ -47,7 +47,7 @@ class PointsCountdownFormatter extends FormatterBase {
           'realtime' => $this->getSetting('realtime'),
           'calculate' => $this->getSetting('calculate'),
           'time' => $this->getSetting('time'),
-          'end' => $this->getSetting('end'),
+          'end' => $this->getEndPoints(),
           'speed' => $this->getSetting('speed'),
         ],
       ];

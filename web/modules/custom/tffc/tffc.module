@@ -5,7 +5,6 @@
  * Contains tffc.module.
  */
 
-use Drupal\comment\Entity\Comment;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\Entity\Node;
 use Drupal\tffc\Tffc;
@@ -84,7 +83,7 @@ function tffc_comment_presave(&$comment) {
   $score_val = Tffc::calculatePoints($timestamp, $score, $end);
 
   // load all the prev comments for this node by this user
-  $prev_comments = _tffc_load_comments_by_nid($entity->id(), $user->id());
+  $prev_comments = Tffc::load_comments_by_nid($entity->id(), $user->id());
 
   // now we have all the comments
   // what we want to do here is go through each comment
@@ -157,78 +156,8 @@ function tffc_comment_insert(Drupal\Core\Entity\EntityInterface $comment) {
   $nid = $entity->id();
 
   try {
-    _tffc_create_comment_reply($nid, $cid, $isCorrect);
+    Tffc::create_comment_reply($nid, $cid, $isCorrect);
   } catch (\Drupal\Core\Entity\EntityStorageException $e) {
   }
 }
 
-/**
- * Load comments by node id and uid
- *
- * @param $nid
- * @param bool $uid
- *
- * @return array|int
- */
-function _tffc_load_comments_by_nid($nid, $uid = FALSE) {
-  $comments = [];
-
-  $query = \Drupal::entityQuery('comment')
-    ->condition('entity_id', $nid)
-    ->condition('entity_type', 'node');
-
-  // if we want to limit by uid
-  if ($uid) {
-    $query->condition('uid', $uid);
-  }
-
-  // run the query
-  $cids = $query->sort('cid', 'DESC')->execute();
-
-  // load the comment information
-  if (!empty($cids)) {
-    foreach ($cids as $cid) {
-      $comments[] = Comment::load($cid);
-    }
-  }
-
-  return $comments;
-}
-
-/**
- * Reply to a comment with correct or wrong information
- *
- * @param $entity_id
- * @param bool $pid
- * @param bool $correct
- *
- * @throws \Drupal\Core\Entity\EntityStorageException
- */
-function _tffc_create_comment_reply($entity_id, $pid = FALSE, $correct = FALSE) {
-  $values = [
-    'entity_type' => 'node',
-    'entity_id' => $entity_id,
-    'field_name' => 'field_answers',
-    'uid' => TFFC_REPLY_BOT_ID,
-    'comment_type' => 'answers',
-    'status' => 1,
-
-    'subject' => $correct ? t('Correct Answer') : t('Wrong Answer'),
-    'field_reply' => [
-      'format' => 'basic_html',
-      'value' => t('test'),
-    ],
-  ];
-
-  // if we have a pid
-  // lets add it here
-  if ($pid) {
-    $values['pid'] = $pid;
-  }
-
-  // This will create an actual comment entity out of our field values.
-  $comment = Comment::create($values);
-
-  // Last, we actually need to save the comment to the database.
-  $comment->save();
-}

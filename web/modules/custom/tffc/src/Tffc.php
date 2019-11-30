@@ -84,11 +84,12 @@ class Tffc {
    * @param $entity_id
    * @param array $hints - contains the hint questions & the current hint number
    * @param bool $pid
+   * @param bool $uid
    * @param bool $correct
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public static function create_comment_reply($entity_id, array $hints, $pid = FALSE, $correct = FALSE) {
+  public static function create_comment_reply($entity_id, $hints = [], $pid = FALSE, $uid = FALSE, $correct = FALSE) {
     $reply = '';
 
     if ($correct) {
@@ -96,11 +97,6 @@ class Tffc {
     }
     else {
       $reply .= '<p class="comment-response comment-response-wrong">' . self::random_wrong_response() . '</p>';
-
-      $hint = self::hint_response($hints['options'], $hints['count']);
-      if ($hint) {
-        $reply .= '<code class="comment-response-hint">' . $hint . '</code>';
-      }
     }
 
     $values = [
@@ -118,10 +114,22 @@ class Tffc {
       ],
     ];
 
+    $hint = self::hint_response($hints['options'], $hints['count']);
+    if ($hint) {
+      $values['field_hint'] = [
+        'format' => 'full_html',
+        'value' => $hint,
+      ];
+    }
+
     // if we have a pid
-    // lets add it here
     if ($pid) {
-      $values['pid'] = $pid;
+      $values['field_parent_comment']['target_id'] = $pid;
+    }
+
+    // if we have a uid
+    if ($uid) {
+      $values['field_replied_to_user']['target_id'] = $uid;
     }
 
     // This will create an actual comment entity out of our field values.

@@ -175,7 +175,7 @@ function tffc_comment_insert(Drupal\Core\Entity\EntityInterface $comment) {
     Tffc::create_comment_reply($nid, [
       'options' => $hints,
       'count' => $current_guess,
-    ], FALSE, $isCorrect);
+    ], $cid, $reply_uid, $isCorrect);
   } catch (\Drupal\Core\Entity\EntityStorageException $e) {
   }
 }

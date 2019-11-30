@@ -1,0 +1,5 @@
+tffc.config:
+  route_name: tffc.config
+  title: 'The Friday Film Club'
+  description: 'Settings for The Friday Film Club'
+  parent: system.admin_config_ui

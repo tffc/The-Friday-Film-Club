@@ -1,1 +1,4 @@
-
+configure tffc:
+  title: 'Configure TFFC Settings'
+  description: 'Allows configuration of settings for The Friday Film Club'
+  restrict access: TRUE

@@ -5,7 +5,10 @@
  * Contains tffc.module.
  */
 
+use Drupal\Core\Database\Query\AlterableInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\field\Entity\FieldConfig;
 use Drupal\node\Entity\Node;
 use Drupal\tffc\Tffc;
 
@@ -171,6 +174,7 @@ function tffc_comment_insert(Drupal\Core\Entity\EntityInterface $comment) {
   // load the hints
   $hints = $film->get('field_hints')->getValue();
 
+  // try to add a reply comment
   try {
     Tffc::create_comment_reply($nid, [
       'options' => $hints,
@@ -181,9 +185,88 @@ function tffc_comment_insert(Drupal\Core\Entity\EntityInterface $comment) {
 }
 
 /**
+ * @param \Drupal\Core\Database\Query\AlterableInterface $query
+ */
+function tffc_query_comment_filter_alter(AlterableInterface $query) {
+  if ($query->getMetaData('base_table') == 'comment') {
+    /** @var \Drupal\Core\Entity\Entity $entity */
+    $entity = $query->getMetaData('entity');
+
+    /** @var \Drupal\field\Entity\FieldConfig $field */
+    $field = FieldConfig::loadByName($entity->getEntityTypeId(), $entity->bundle(), $query->getMetaData('field_name'));
+
+    // get the the third party settings
+    $limit_logged_in = $field->getThirdPartySetting('tffc', 'limit_logged_in', FALSE);
+    $include_reply_bot = $field->getThirdPartySetting('tffc', 'include_reply_bot', FALSE);
+
+    // store the uids we are limiting to
+    // and the reply to uids
+    $limited_uids = [];
+    $reply_to_uids = [];
+
+    // if limit to logged in is enabled
+    if ($limit_logged_in) {
+
+      // get the current logged in user
+      // add that id to the limit uids
+      $current_user = \Drupal::currentUser();
+      $current_uid = $current_user->id();
+      if ($current_uid) {
+        $limited_uids[$current_uid] = $current_uid;
+      }
+
+      // if we want to include any reply bots
+      if ($include_reply_bot) {
+        // add them to the limited uids list
+        $reply_to_uids[$current_uid] = $current_uid;
+      }
+    }
+
+    // Need to alter the query so that it does the following
+    //
+    // - Limit the comments to the current user OR
+    // - Limit the comments to the reply bots AND was reply to field is current user
+    $conditions = FALSE;
+
+    // if we have limit uids
+    if (!empty($limited_uids)) {
+      $conditions = $query->orConditionGroup()
+        ->condition('uid', $limited_uids, 'IN');
+    }
+
+    // if we have reply to uids to limit to
+    if (!empty($reply_to_uids)) {
+      // if we don't have a root conditions field
+      // we should do because you cannot create reply to without limited
+      if ($conditions === FALSE) {
+        $conditions = $query->orConditionGroup();
+      }
+
+      // create a left join on the fields
+      $query->leftjoin('comment__field_replied_to_user', 'cr2u', 'cr2u.entity_id = c.cid');
+      // build an AND query with reply bots and limited to replied to user ids
+      $reply_conditions = $query->andConditionGroup()
+        ->condition('cr2u.field_replied_to_user_target_id', $reply_to_uids, 'IN')
+        ->condition('uid', [TFFC_REPLY_BOT_ID], 'IN');
+
+      // add to the conditions list
+      $conditions->condition($reply_conditions);
+    }
+
+    // attach the new conditions
+    if ($conditions) {
+      $query->condition($conditions);
+    }
+
+  }
+}
+
+/**
  * Implements hook_form_alter().
  */
 function tffc_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+
+  // Alter the comment form reply box
   if ('comment_answers_form' === $form_id) {
     // change the form submit button
     $form['actions']['submit']['#value'] = t('Submit');
@@ -192,5 +275,53 @@ function tffc_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_stat
     // set the placeholder to the field_answer's title
     $form['field_answer']['widget'][0]['target_id']['#placeholder'] = $form['field_answer']['widget'][0]['target_id']['#title'];
   }
+
+
+  // Alter 'field_config_edit_form' form.
+  if ($form_id == 'field_config_edit_form') {
+
+    $field = $form_state->getFormObject()->getEntity();
+
+    if ($field->getType() == 'comment') {
+
+      $form['tffc'] = [
+        '#type' => 'fieldset',
+        '#title' => t('The Friday Film Club'),
+        '#weight' => 50,
+      ];
+
+      $form['tffc']['limit_logged_in'] = [
+        '#type' => 'checkbox',
+        '#title' => t('Limit to logged in users comments'),
+        '#description' => t('This makes the comment replies only show the logged in users, so you cannot see any other replies.'),
+        '#default_value' => $field->getThirdPartySetting('tffc', 'limit_logged_in', FALSE),
+        '#weight' => 1,
+      ];
+
+      $form['tffc']['include_reply_bot'] = [
+        '#type' => 'checkbox',
+        '#title' => t('Include reply bots replies'),
+        '#description' => t('This means that the bots replies will also be displayed to the logged in user.'),
+        '#default_value' => $field->getThirdPartySetting('tffc', 'include_reply_bot', FALSE),
+        '#states' => [
+          'visible' => [
+            ':input[name="limit_logged_in"]' => ['checked' => TRUE],
+          ],
+        ],
+        '#weight' => 2,
+      ];
+      // Add entity builder.
+      $form['#entity_builders'][] = '_tffc_field_config_edit_form_builder';
+    }
+
+  }
+}
+
+/**
+ * Comments order form builder to map values to third party settings.
+ */
+function _tffc_field_config_edit_form_builder($entity_type, FieldConfig $field, &$form, FormStateInterface $form_state) {
+  $field->setThirdPartySetting('tffc', 'limit_logged_in', $form_state->getValue('limit_logged_in'));
+  $field->setThirdPartySetting('tffc', 'include_reply_bot', $form_state->getValue('include_reply_bot'));
 }
 

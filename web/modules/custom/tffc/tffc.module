@@ -290,6 +290,7 @@ function tffc_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_stat
         '#weight' => 50,
       ];
 
+      // add in the limit logged in field
       $form['tffc']['limit_logged_in'] = [
         '#type' => 'checkbox',
         '#title' => t('Limit to logged in users comments'),
@@ -298,6 +299,7 @@ function tffc_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_stat
         '#weight' => 1,
       ];
 
+      // add in the include reply bot field
       $form['tffc']['include_reply_bot'] = [
         '#type' => 'checkbox',
         '#title' => t('Include reply bots replies'),
@@ -310,7 +312,8 @@ function tffc_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_stat
         ],
         '#weight' => 2,
       ];
-      // Add entity builder.
+
+      // attach the save method
       $form['#entity_builders'][] = '_tffc_field_config_edit_form_builder';
     }
 
@@ -318,7 +321,7 @@ function tffc_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_stat
 }
 
 /**
- * Comments order form builder to map values to third party settings.
+ * mapper to save the third part fields
  */
 function _tffc_field_config_edit_form_builder($entity_type, FieldConfig $field, &$form, FormStateInterface $form_state) {
   $field->setThirdPartySetting('tffc', 'limit_logged_in', $form_state->getValue('limit_logged_in'));

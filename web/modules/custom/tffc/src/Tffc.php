@@ -114,12 +114,15 @@ class Tffc {
       ],
     ];
 
-    $hint = self::hint_response($hints['options'], $hints['count']);
-    if ($hint) {
-      $values['field_hint'] = [
-        'format' => 'full_html',
-        'value' => $hint,
-      ];
+    // if not correct lets add a hint
+    if(!$correct) {
+      $hint = self::hint_response($hints['options'], $hints['count']);
+      if ($hint) {
+        $values['field_hint'] = [
+          'format' => 'full_html',
+          'value' => $hint,
+        ];
+      }
     }
 
     // if we have a pid

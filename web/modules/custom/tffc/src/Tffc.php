@@ -139,6 +139,41 @@ class Tffc {
     $comment->save();
   }
 
+
+  /**
+   * Loads the comments to check if the count has been hit or one comment
+   * has completed set to true
+   *
+   * @param $nid
+   * @param $uid
+   *
+   * @return bool
+   */
+  public static function is_question_complete($nid, $uid) {
+    $is_closed = FALSE;
+
+    $comments = self::load_comments_by_nid($nid, $uid);
+    $count = count($comments);
+
+    // if the number of comments
+    // is equal to the number of allowed comments
+    if ($count >= 3) {
+      return TRUE;
+    }
+
+    // check if any of the comments says the comment is correct
+    if ($comments) {
+      foreach ($comments as $comment) {
+        $is_correct = $comment->get('field_correct')->value;
+        if ($is_correct) {
+          $is_closed = TRUE;
+        }
+      }
+    }
+
+    return $is_closed;
+  }
+
   /**
    * Returns a random wrong response
    *

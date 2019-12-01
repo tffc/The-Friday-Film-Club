@@ -274,8 +274,23 @@ function tffc_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_stat
     $form['field_answer']['widget'][0]['target_id']['#title_display'] = 'none';
     // set the placeholder to the field_answer's title
     $form['field_answer']['widget'][0]['target_id']['#placeholder'] = $form['field_answer']['widget'][0]['target_id']['#title'];
-  }
 
+    // load the current user
+    $current_user = \Drupal::currentUser();
+    $current_uid = $current_user->id();
+
+    // load the current node
+    $node = \Drupal::routeMatch()->getParameter('node');
+
+    // if the form is complete we remove the ability
+    // to add more questions
+    if ($node instanceof \Drupal\node\NodeInterface) {
+      $nid = $node->id();
+      if ($current_uid && Tffc::is_question_complete($nid, $current_uid)) {
+        $form = [];
+      }
+    }
+  }
 
   // Alter 'field_config_edit_form' form.
   if ($form_id == 'field_config_edit_form') {
@@ -316,7 +331,6 @@ function tffc_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_stat
       // attach the save method
       $form['#entity_builders'][] = '_tffc_field_config_edit_form_builder';
     }
-
   }
 }
 

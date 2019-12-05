@@ -115,7 +115,7 @@ class Tffc {
     ];
 
     // if not correct lets add a hint
-    if(!$correct) {
+    if (!$correct) {
       $hint = self::hint_response($hints['options'], $hints['count']);
       if ($hint) {
         $values['field_hint'] = [
@@ -153,6 +153,9 @@ class Tffc {
    * @return bool
    */
   public static function is_question_complete($nid, $uid) {
+    $tffc_config = \Drupal::config('tffc.settings');
+    $guesses = $tffc_config->get('guesses') ?? 3;
+
     $is_closed = FALSE;
 
     $comments = self::load_comments_by_nid($nid, $uid);
@@ -160,14 +163,14 @@ class Tffc {
 
     // if the number of comments
     // is equal to the number of allowed comments
-    if ($count >= 3) {
+    if ($count >= $guesses) {
       return TRUE;
     }
 
     // check if any of the comments says the comment is correct
     if ($comments) {
       foreach ($comments as $comment) {
-        $is_correct = $comment->get('field_correct')->value;
+        $is_correct = $comment->get('field_complete')->value;
         if ($is_correct) {
           $is_closed = TRUE;
         }

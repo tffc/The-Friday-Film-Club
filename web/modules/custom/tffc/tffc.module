@@ -46,6 +46,9 @@ function tffc_theme() {
  * @param $comment
  */
 function tffc_comment_presave(&$comment) {
+  // load config settings
+  $tffc_config = \Drupal::config('tffc.settings');
+
   $reply_uid = $comment->get('uid')->target_id;
 
   // we don't want to run a presave if the comment is by the
@@ -106,6 +109,7 @@ function tffc_comment_presave(&$comment) {
   // mark it as correct and calculate the score
   if ($answer === $correct_answer) {
     $isCorrect = TRUE;
+    $isComplete = TRUE;
     // calculating the score by using the time score
     // then making sure the overall score is not less than the end value
     // and not greater than the possible total score
@@ -118,7 +122,18 @@ function tffc_comment_presave(&$comment) {
     // if it is incorrect
     // mark it as not correct and set the score the penalty value
     $isCorrect = FALSE;
+    $isComplete = FALSE;
     $score = $penalty;
+  }
+
+  //load the gueses from the database
+  $guesses = $tffc_config->get('guesses') ?? 3;
+  // if the number of guesses is equal to or greater than 3
+  // then mark the question as complete
+  // we also set the score to be the 'end' value which is the lowest score you can get
+  if ($guess >= $guesses){
+    $isComplete = TRUE;
+    $score = $end;
   }
 
   // get the question title
@@ -135,6 +150,7 @@ function tffc_comment_presave(&$comment) {
   $comment->setSubject($subject);
   $comment->set('field_score', $score);
   $comment->set('field_correct', $isCorrect);
+  $comment->set('field_complete', $isComplete);
   $comment->set('field_guess_count', $guess);
 
 }

@@ -33,6 +33,7 @@ class PointsWidget extends WidgetBase {
       '#default_value' => $items[$delta]->total ?? NULL,
       '#empty_value' => '',
       '#placeholder' => t('Points amount'),
+      '#description' => $this->getFilteredDescription(),
     ];
 
     return $element;

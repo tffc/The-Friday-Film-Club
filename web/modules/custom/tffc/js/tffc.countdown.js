@@ -36,7 +36,11 @@
         var start = $this.data('start');
         var end = $this.data('end');
         var speed = $this.data('interval');
-        createCountdown($elem, start, end, speed);
+        var enabled = $this.data('enabled');
+
+        if (enabled) {
+          createCountdown($elem, start, end, speed);
+        }
 
       }
     });

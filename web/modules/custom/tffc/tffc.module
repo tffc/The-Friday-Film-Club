@@ -5,7 +5,14 @@
  * Contains tffc.module.
  */
 
+use Drupal\Core\Database\Query\AlterableInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\node\Entity\Node;
+use Drupal\tffc\Tffc;
+
+define('TFFC_REPLY_BOT_ID', 2);
 
 /**
  * Implements hook_help().
@@ -25,10 +32,364 @@ function tffc_theme() {
     'variables' => [
       'total_points' => 0,
       'options' => [
-        'realtime' => false,
+        'realtime' => FALSE,
+        'end' => 0,
+        'speed' => 1000,
+        'time' => 0,
+        'calculate' => FALSE,
+        'enabled' => FALSE,
       ],
     ],
   ];
 
   return $info;
 }
+
+/**
+ * hook_comment_presave
+ *
+ * @param $comment
+ */
+function tffc_comment_presave(&$comment) {
+  // load config settings
+  $tffc_config = \Drupal::config('tffc.settings');
+
+  $reply_uid = $comment->get('uid')->target_id;
+
+  // we don't want to run a presave if the comment is by the
+  // reply bot (no loopy loops)
+  if ($reply_uid === TFFC_REPLY_BOT_ID) {
+    return;
+  }
+
+  // load the current user
+  $user = \Drupal::currentUser();
+
+  // will store any penalty scores from previous tries
+  $prev_scores = 0;
+
+  // what guess count are we on.
+  // start at 1 guess :D
+  $guess = 1;
+
+  // load some information from the comments
+  $entity_id = $comment->get('entity_id')->target_id;
+  $answer = $comment->get('field_answer')->target_id;
+
+  // load the entity it is attached too
+  $entity = Node::load($entity_id);
+
+  // get the total score from the question node
+  $score = $entity->get('field_total_points')->total ?? 40000;
+  // the correct answer target id
+  $correct_answer = $entity->get('field_related_film')->target_id ?? -1;
+  // the penalty score for an incorrect value
+  $penalty = $entity->get('field_penalty')->value ?? -2000;
+  // the lowest score you can get
+  $end = $entity->get('field_end_points')->value ?? 0;
+  // get the time the question was created
+  $timestamp = $entity->getCreatedTime();
+
+  // calculate the points val before loading the comments
+  $score_val = Tffc::calculatePoints($timestamp, $score, $end);
+
+  // load all the prev comments for this node by this user
+  $prev_comments = Tffc::load_comments_by_nid($entity->id(), $user->id());
+
+  // now we have all the comments
+  // what we want to do here is go through each comment
+  // getting a list of only wrong answers and adding up the incorrect value scores
+  if ($prev_comments) {
+    foreach ($prev_comments as $prev) {
+      if ($prev->get('field_correct')->value !== "1") {
+        // add together the prev scores
+        $prev_scores += (int) $prev->get('field_score')->value;
+      }
+      // add up the number of guesses
+      // we don't care about right or wrong here
+      $guess++;
+    }
+  }
+  // the answer is correct
+  // mark it as correct and calculate the score
+  if ($answer === $correct_answer) {
+    $isCorrect = TRUE;
+    $isComplete = TRUE;
+    // calculating the score by using the time score
+    // then making sure the overall score is not less than the end value
+    // and not greater than the possible total score
+    $new_score = $score_val + $prev_scores;
+    $new_score = $new_score <= $end ? $end : $new_score;
+    $new_score = $new_score >= $score ? $score : $new_score;
+    $score = $new_score;
+  }
+  else {
+    // if it is incorrect
+    // mark it as not correct and set the score the penalty value
+    $isCorrect = FALSE;
+    $isComplete = FALSE;
+    $score = $penalty;
+  }
+
+  //load the gueses from the database
+  $guesses = $tffc_config->get('guesses') ?? 3;
+  // if the number of guesses is equal to or greater than 3
+  // then mark the question as complete
+  // we also set the score to be the 'end' value which is the lowest score you can get
+  if ($guess >= $guesses) {
+    $isComplete = TRUE;
+    $score = $end;
+  }
+
+  // get the question title
+  $title = $entity->getTitle();
+
+  // build the comment subject
+  $subject = t('@title - @user | Guess: @count', [
+    '@title' => $title,
+    '@user' => $user->getAccountName(),
+    '@count' => $guess,
+  ]);
+
+  // update the comment fields
+  $comment->setSubject($subject);
+  $comment->set('field_score', $score);
+  $comment->set('field_correct', $isCorrect);
+  $comment->set('field_complete', $isComplete);
+  $comment->set('field_guess_count', $guess);
+
+}
+
+/**
+ * Implements hook_aggregator_fetcher_info_alter().
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $comment
+ */
+function tffc_comment_insert(Drupal\Core\Entity\EntityInterface $comment) {
+  $reply_uid = $comment->get('uid')->target_id;
+
+  // we don't want to run a insert if the comment is by the
+  // reply bot no replying to it self.
+  if ($reply_uid === TFFC_REPLY_BOT_ID) {
+    return;
+  }
+
+  // load some information from the comments
+  $entity_id = $comment->get('entity_id')->target_id;
+  $isCorrect = $comment->get('field_correct')->value;
+  $current_guess = $comment->get('field_guess_count')->value;
+
+  // load the entity it is attached too
+  $entity = Node::load($entity_id);
+
+  // get the cid & nid
+  $cid = $comment->id();
+  $nid = $entity->id();
+
+  // get the related film id
+  $related_film = $entity->get('field_related_film')->target_id;
+
+  // load the film
+  $film = Node::load($related_film);
+
+  // load the hints
+  $hints = $film->get('field_hints')->getValue();
+
+  // try to add a reply comment
+  try {
+    Tffc::create_comment_reply($nid, [
+      'options' => $hints,
+      'count' => $current_guess,
+    ], $cid, $reply_uid, $isCorrect);
+  } catch (\Drupal\Core\Entity\EntityStorageException $e) {
+  }
+}
+
+/**
+ * @param \Drupal\Core\Database\Query\AlterableInterface $query
+ */
+function tffc_query_comment_filter_alter(AlterableInterface $query) {
+  if ($query->getMetaData('base_table') == 'comment') {
+    /** @var \Drupal\Core\Entity\Entity $entity */
+    $entity = $query->getMetaData('entity');
+
+    /** @var \Drupal\field\Entity\FieldConfig $field */
+    $field = FieldConfig::loadByName($entity->getEntityTypeId(), $entity->bundle(), $query->getMetaData('field_name'));
+
+    // get the the third party settings
+    $limit_logged_in = $field->getThirdPartySetting('tffc', 'limit_logged_in', FALSE);
+    $include_reply_bot = $field->getThirdPartySetting('tffc', 'include_reply_bot', FALSE);
+
+    // store the uids we are limiting to
+    // and the reply to uids
+    $limited_uids = [];
+    $reply_to_uids = [];
+
+    // if limit to logged in is enabled
+    if ($limit_logged_in) {
+
+      // get the current logged in user
+      // add that id to the limit uids
+      $current_user = \Drupal::currentUser();
+      $current_uid = $current_user->id();
+      if ($current_uid) {
+        $limited_uids[$current_uid] = $current_uid;
+      }
+
+      // if we want to include any reply bots
+      if ($include_reply_bot) {
+        // add them to the limited uids list
+        $reply_to_uids[$current_uid] = $current_uid;
+      }
+    }
+
+    // Need to alter the query so that it does the following
+    //
+    // - Limit the comments to the current user OR
+    // - Limit the comments to the reply bots AND was reply to field is current user
+    $conditions = FALSE;
+
+    // if we have limit uids
+    if (!empty($limited_uids)) {
+      $conditions = $query->orConditionGroup()
+        ->condition('uid', $limited_uids, 'IN');
+    }
+
+    // if we have reply to uids to limit to
+    if (!empty($reply_to_uids)) {
+      // if we don't have a root conditions field
+      // we should do because you cannot create reply to without limited
+      if ($conditions === FALSE) {
+        $conditions = $query->orConditionGroup();
+      }
+
+      // create a left join on the fields
+      $query->leftjoin('comment__field_replied_to_user', 'cr2u', 'cr2u.entity_id = c.cid');
+      // build an AND query with reply bots and limited to replied to user ids
+      $reply_conditions = $query->andConditionGroup()
+        ->condition('cr2u.field_replied_to_user_target_id', $reply_to_uids, 'IN')
+        ->condition('uid', [TFFC_REPLY_BOT_ID], 'IN');
+
+      // add to the conditions list
+      $conditions->condition($reply_conditions);
+    }
+
+    // attach the new conditions
+    if ($conditions) {
+      $query->condition($conditions);
+    }
+
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function tffc_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+
+  // Alter the comment form reply box
+  if ('comment_answers_form' === $form_id) {
+    // change the form submit button
+    $form['actions']['submit']['#value'] = t('Submit');
+    // hide the answer title
+    $form['field_answer']['widget'][0]['target_id']['#title_display'] = 'none';
+    // set the placeholder to the field_answer's title
+    $form['field_answer']['widget'][0]['target_id']['#placeholder'] = $form['field_answer']['widget'][0]['target_id']['#title'];
+
+    // load the current user
+    $current_user = \Drupal::currentUser();
+    $current_uid = $current_user->id();
+
+    // load the current node
+    $node = \Drupal::routeMatch()->getParameter('node');
+
+    // if the form is complete we remove the ability
+    // to add more questions
+    if ($node instanceof \Drupal\node\NodeInterface) {
+      $nid = $node->id();
+      if ($current_uid && Tffc::is_question_complete($nid, $current_uid)) {
+        $form = [];
+      }
+    }
+  }
+
+  // Alter 'field_config_edit_form' form.
+  if ($form_id == 'field_config_edit_form') {
+
+    $field = $form_state->getFormObject()->getEntity();
+
+    if ($field->getType() == 'comment') {
+
+      $form['tffc'] = [
+        '#type' => 'fieldset',
+        '#title' => t('The Friday Film Club'),
+        '#weight' => 50,
+      ];
+
+      // add in the limit logged in field
+      $form['tffc']['limit_logged_in'] = [
+        '#type' => 'checkbox',
+        '#title' => t('Limit to logged in users comments'),
+        '#description' => t('This makes the comment replies only show the logged in users, so you cannot see any other replies.'),
+        '#default_value' => $field->getThirdPartySetting('tffc', 'limit_logged_in', FALSE),
+        '#weight' => 1,
+      ];
+
+      // add in the include reply bot field
+      $form['tffc']['include_reply_bot'] = [
+        '#type' => 'checkbox',
+        '#title' => t('Include reply bots replies'),
+        '#description' => t('This means that the bots replies will also be displayed to the logged in user.'),
+        '#default_value' => $field->getThirdPartySetting('tffc', 'include_reply_bot', FALSE),
+        '#states' => [
+          'visible' => [
+            ':input[name="limit_logged_in"]' => ['checked' => TRUE],
+          ],
+        ],
+        '#weight' => 2,
+      ];
+
+      // attach the save method
+      $form['#entity_builders'][] = '_tffc_field_config_edit_form_builder';
+    }
+  }
+}
+
+/**
+ * Inject some settings into the field
+ *
+ * @param $variables
+ * @param $hook
+ */
+function tffc_preprocess_field(&$variables, $hook) {
+  $field_type = $variables['element']['#field_type'];
+  if ($field_type === 'field_tffc_points' && $hook === 'field') {
+    // load the current user
+    $user = \Drupal::currentUser();
+    $uid = $user->id();
+
+    // load the current node
+    $node = \Drupal::routeMatch()->getParameter('node');
+    if ($node instanceof \Drupal\node\NodeInterface) {
+      $nid = $node->id();
+
+      // check if complete
+      $isComplete = Tffc::is_question_complete($nid, $uid, TRUE);
+      if ($isComplete) {
+        $points = $isComplete;
+
+        $variables['items'][0]['content']['#total_points'] = $points;
+        $variables['items'][0]['content']['#options']['enabled'] = FALSE;
+      }
+    }
+  }
+}
+
+/**
+ * mapper to save the third part fields
+ */
+function _tffc_field_config_edit_form_builder($entity_type, FieldConfig $field, &$form, FormStateInterface $form_state) {
+  $field->setThirdPartySetting('tffc', 'limit_logged_in', $form_state->getValue('limit_logged_in'));
+  $field->setThirdPartySetting('tffc', 'include_reply_bot', $form_state->getValue('include_reply_bot'));
+}
+

@@ -1,0 +1,7 @@
+tffc.config:
+  path: '/admin/config/user-interface/tffc/settings'
+  defaults:
+    _form: '\Drupal\tffc\Form\TffcSettingsForm'
+    _title: 'The Friday Film Club Settings'
+  requirements:
+    _permission: 'configure tffc'

@@ -5,6 +5,6 @@
   ]
 %}
 {{ attach_library('tffc/tffc.countdown') }}
-<div {{ attributes.addClass(classes) }} data-start="{{ total_points }}" data-end="{{ options.end }}" data-interval="{{ options.speed }}">
+<div {{ attributes.addClass(classes) }} data-start="{{ total_points }}" data-end="{{ options.end }}" data-interval="{{ options.speed }}" data-enabled="{{ options.enabled }}">
   <span class="number">{{ total_points }}</span>
 </div>

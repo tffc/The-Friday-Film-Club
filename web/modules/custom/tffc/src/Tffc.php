@@ -149,12 +149,15 @@ class Tffc {
    *
    * @param $nid
    * @param $uid
+   * @param bool $return_score
    *
    * @return bool
    */
-  public static function is_question_complete($nid, $uid) {
+  public static function is_question_complete($nid, $uid, $return_score = FALSE) {
     $tffc_config = \Drupal::config('tffc.settings');
     $guesses = $tffc_config->get('guesses') ?? 3;
+
+    $score = FALSE;
 
     $is_closed = FALSE;
 
@@ -173,11 +176,13 @@ class Tffc {
         $is_correct = $comment->get('field_complete')->value;
         if ($is_correct) {
           $is_closed = TRUE;
+          $score = $comment->get('field_score')->value;
         }
       }
     }
 
-    return $is_closed;
+
+    return $return_score ? $score : $is_closed;
   }
 
   /**

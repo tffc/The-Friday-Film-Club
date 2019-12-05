@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "06dca317be33c63b10f5fed066d9f478",
+    "content-hash": "966d50747b5f171cc85de36fd75e85a5",
     "packages": [
         {
             "name": "alchemy/zippy",
@@ -2296,6 +2296,53 @@
                 "source": "https://git.drupalcode.org/project/claro",
                 "docs": "https://www.drupal.org/docs/8/modules/claro",
                 "issues": "https://www.drupal.org/project/issues/claro"
+            }
+        },
+        {
+            "name": "drupal/coming_soon",
+            "version": "3.6.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/coming_soon.git",
+                "reference": "8.x-3.6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/coming_soon-8.x-3.6.zip",
+                "reference": "8.x-3.6",
+                "shasum": "253f7130b51697f0f950089c1a56e3f7409d0b77"
+            },
+            "require": {
+                "drupal/core": "~8.0"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "branch-alias": {
+                    "dev-3.x": "3.x-dev"
+                },
+                "drupal": {
+                    "version": "8.x-3.6",
+                    "datestamp": "1527417484",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "teeyo",
+                    "homepage": "https://www.drupal.org/user/2977099"
+                }
+            ],
+            "description": "Makes it easier to add a coming soon page to your website.",
+            "homepage": "https://www.drupal.org/project/coming_soon",
+            "support": {
+                "source": "https://git.drupalcode.org/project/coming_soon"
             }
         },
         {

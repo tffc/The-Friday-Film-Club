@@ -1,0 +1,315 @@
+{#
+/**
+ *
+ * When formatting an email message with a given $module and $key, [1]HTML
+ * Mail will use the first template file it finds from the following list:
+ *  1. htmlmail--$module--$key.html.twig
+ *  2. htmlmail--$module.html.twig
+ *  3. htmlmail.html.twig
+ *
+ * For each filename, [2]HTML Mail looks first in the chosen Email theme
+ * directory, then in its own module directory, before proceeding to the
+ * next filename.
+ *
+ * For example, if example_module sends mail with:
+ * drupal_mail("example_module", "outgoing_message" ...)
+ *
+ *
+ * the possible template file names would be:
+ *  1. htmlmail--example_module--outgoing_message.html.twig
+ *  2. htmlmail--example_module.html.twig
+ *  3. htmlmail.html.twig
+ *
+ * Template files are cached, so remember to clear the cache by visiting
+ * admin/config/development/performance after changing any .html.twig files.
+ *
+ * The following variables available in this template:
+ *
+ * message.body
+ *        The message body text.
+ *
+ * message.module
+ *        The first argument to [3]drupal_mail(), which is, by convention,
+ *        the machine-readable name of the sending module.
+ *
+ * message.key
+ *        The second argument to [4]drupal_mail(), which should give some
+ *        indication of why this email is being sent.
+ *
+ * message.message_id
+ *        The email message id, which should be equal to
+ *        "{$module}_{$key}".
+ *
+ * message.headers
+ *        An array of email (name => value) pairs.
+*
+* message.from
+*        The configured sender address.
+*
+* message.to
+*        The recipient email address.
+*
+* message.subject
+*        The message subject line.
+*
+* message.body
+*        The formatted message body.
+*
+* message.language
+*        The language code for this message.
+*
+* message.params
+*        Any module-specific parameters.
+*
+* template_name
+*        The basename of the active template.
+*
+* template_path
+*        The relative path to the template directory.
+*
+* template_url
+*        The absolute URL to the template directory.
+*
+* theme
+*        The name of the Email theme used to hold template files. If the
+*        [5]Echo module is enabled this theme will also be used to
+*        transform the message body into a fully-themed webpage.
+*
+* theme_path
+*        The relative path to the selected Email theme directory.
+*
+* theme_url
+*        The absolute URL to the selected Email theme directory.
+*
+* debug
+*        TRUE to add some useful debugging info to the bottom of the
+*        message.
+*
+* Other modules may also add or modify theme variables by implementing a
+* MODULENAME_preprocess_htmlmail(&$variables) [6]hook function.
+*
+* References
+*
+* 1. http://drupal.org/project/htmlmail
+* 2. https://www.drupal.org/documentation/theme
+* 3. https://www.drupal.org/developing/api/8/render
+* 4. http://drupal.org/project/echo
+*
+* =========================================================== End instructions.
+*/
+#}
+
+<!DOCTYPE html>
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Welcome Email</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    /**
+     * Google webfonts. Recommended to include the .woff version for cross-client compatibility.
+     */
+    @media screen {
+      @font-face {
+        font-family: 'Source Sans Pro';
+        font-style: normal;
+        font-weight: 400;
+        src: local('Source Sans Pro Regular'), local('SourceSansPro-Regular'), url(https://fonts.gstatic.com/s/sourcesanspro/v10/ODelI1aHBYDBqgeIAH2zlBM0YzuT7MdOe03otPbuUS0.woff) format('woff');
+      }
+
+      @font-face {
+        font-family: 'Source Sans Pro';
+        font-style: normal;
+        font-weight: 700;
+        src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url(https://fonts.gstatic.com/s/sourcesanspro/v10/toadOcfmlt9b38dHJxOBGFkQc6VGVFSmCnC_l7QZG60.woff) format('woff');
+      }
+    }
+
+    /**
+     * Avoid browser level font resizing.
+     * 1. Windows Mobile
+     * 2. iOS / OSX
+     */
+    body,
+    table,
+    td,
+    a {
+      -ms-text-size-adjust: 100%; /* 1 */
+      -webkit-text-size-adjust: 100%; /* 2 */
+    }
+
+    /**
+     * Remove extra space added to tables and cells in Outlook.
+     */
+    table,
+    td {
+      mso-table-rspace: 0pt;
+      mso-table-lspace: 0pt;
+    }
+
+    /**
+     * Better fluid images in Internet Explorer.
+     */
+    img {
+      -ms-interpolation-mode: bicubic;
+    }
+
+    /**
+     * Remove blue links for iOS devices.
+     */
+    a[x-apple-data-detectors] {
+      font-family: inherit !important;
+      font-size: inherit !important;
+      font-weight: inherit !important;
+      line-height: inherit !important;
+      color: inherit !important;
+      text-decoration: none !important;
+    }
+
+    /**
+     * Fix centering issues in Android 4.4.
+     */
+    div[style*="margin: 16px 0;"] {
+      margin: 0 !important;
+    }
+
+    body {
+      width: 100% !important;
+      height: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    /**
+     * Collapse table borders to avoid space between cells.
+     */
+    table {
+      border-collapse: collapse !important;
+    }
+
+    a {
+      color: black;
+    }
+
+    img {
+      height: auto;
+      line-height: 100%;
+      text-decoration: none;
+      border: 0;
+      outline: none;
+    }
+  </style>
+
+</head>
+<body style="background-color: #e9ecef;">
+
+<!-- start preheader -->
+<div class="preheader"
+     style="display: none; max-width: 0; max-height: 0; overflow: hidden; font-size: 1px; line-height: 1px; color: #fff; opacity: 0;">
+  {{ body|length > 100 ? text|slice(0, 100) ~ '...' : text }}
+</div>
+<!-- end preheader -->
+
+<!-- start body -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+
+  <!-- start logo -->
+  <tr>
+    <td align="center" bgcolor="#e9ecef">
+      <!--[if (gte mso 9)|(IE)]>
+      <table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
+        <tr>
+          <td align="center" valign="top" width="600">
+      <![endif]-->
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+        <tr>
+          <td align="center" valign="top" style="padding: 36px 24px;">
+            <a href="#" target="_blank" rel="noopener noreferrer" style="display: inline-block;">
+              <div style="width: 48px; height:40px; display: block; min-width: 48px; background: rebeccapurple;"></div>
+            </a>
+          </td>
+        </tr>
+      </table>
+      <!--[if (gte mso 9)|(IE)]>
+      </td>
+      </tr>
+      </table>
+      <![endif]-->
+    </td>
+  </tr>
+  <!-- end logo -->
+
+  <!-- start copy block -->
+  <tr>
+    <td align="center" bgcolor="#e9ecef">
+      <!--[if (gte mso 9)|(IE)]>
+      <table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
+        <tr>
+          <td align="center" valign="top" width="600">
+      <![endif]-->
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+
+        <!-- start copy -->
+        <tr>
+          <td bgcolor="#ffffff" align="left"
+              style="padding: 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;">
+            {{ body|raw }}
+          </td>
+        </tr>
+        <!-- end copy -->
+
+      </table>
+      <!--[if (gte mso 9)|(IE)]>
+      </td>
+      </tr>
+      </table>
+      <![endif]-->
+    </td>
+  </tr>
+  <!-- end copy block -->
+
+  <!-- start footer -->
+  <tr>
+    <td align="center" bgcolor="#e9ecef" style="padding: 24px;">
+      <!--[if (gte mso 9)|(IE)]>
+      <table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
+        <tr>
+          <td align="center" valign="top" width="600">
+      <![endif]-->
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+
+        <!-- start permission -->
+        <tr>
+          <td align="center" bgcolor="#e9ecef"
+              style="padding: 12px 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 14px; line-height: 20px; color: #666;">
+            <p style="margin: 0;">You received this email because you have signed up to The Friday Film Club.</p>
+          </td>
+        </tr>
+        <!-- end permission -->
+
+        <!-- start unsubscribe -->
+        <tr>
+          <td align="center" bgcolor="#e9ecef"
+              style="padding: 12px 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 14px; line-height: 20px; color: #666;">
+            <p style="margin: 0;">The Friday Film Club</p>
+          </td>
+        </tr>
+        <!-- end unsubscribe -->
+
+      </table>
+      <!--[if (gte mso 9)|(IE)]>
+      </td>
+      </tr>
+      </table>
+      <![endif]-->
+    </td>
+  </tr>
+  <!-- end footer -->
+
+</table>
+<!-- end body -->
+
+</body>
+</html>

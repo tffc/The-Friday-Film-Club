@@ -364,22 +364,25 @@ function tffc_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_stat
 function tffc_preprocess_field(&$variables, $hook) {
   $field_type = $variables['element']['#field_type'];
   if ($field_type === 'field_tffc_points' && $hook === 'field') {
-    // load the current user
     $user = \Drupal::currentUser();
-    $uid = $user->id();
+    if ($user->isAuthenticated()) {
+      // load the current user
+      $uid = $user->id();
 
-    // load the current node
-    $node = \Drupal::routeMatch()->getParameter('node');
-    if ($node instanceof \Drupal\node\NodeInterface) {
-      $nid = $node->id();
+      dpm($uid);
+      // load the current node
+      $node = \Drupal::routeMatch()->getParameter('node');
+      if ($node instanceof \Drupal\node\NodeInterface) {
+        $nid = $node->id();
 
-      // check if complete
-      $isComplete = Tffc::is_question_complete($nid, $uid, TRUE);
-      if ($isComplete) {
-        $points = $isComplete;
+        // check if complete
+        $isComplete = Tffc::is_question_complete($nid, $uid, TRUE);
+        if ($isComplete) {
+          $points = $isComplete;
 
-        $variables['items'][0]['content']['#total_points'] = $points;
-        $variables['items'][0]['content']['#options']['enabled'] = FALSE;
+          $variables['items'][0]['content']['#total_points'] = $points;
+          $variables['items'][0]['content']['#options']['enabled'] = FALSE;
+        }
       }
     }
   }

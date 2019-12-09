@@ -369,7 +369,6 @@ function tffc_preprocess_field(&$variables, $hook) {
       // load the current user
       $uid = $user->id();
 
-      dpm($uid);
       // load the current node
       $node = \Drupal::routeMatch()->getParameter('node');
       if ($node instanceof \Drupal\node\NodeInterface) {

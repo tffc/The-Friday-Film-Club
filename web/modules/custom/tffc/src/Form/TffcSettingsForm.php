@@ -55,6 +55,50 @@ class TffcSettingsForm extends ConfigFormBase {
     ];
 
 
+    $form['replies_good'] = [
+      '#type' => 'details',
+      '#title' => t('Positive responses'),
+      '#description' => t('The responses that will be selected at random if the the correct answer is selected.'),
+      '#open' => FALSE,
+    ];
+
+    $form['replies_good']['positive_response'] = [
+      '#type' => 'textarea',
+      '#title' => t('Positive responses'),
+      '#description' => t('Enter a comma separated list of responses.'),
+      '#default_value' => $tffc_config->get('positive_response') ?? 'Well done, Congrats, Yes!',
+    ];
+
+    $form['replies_bad'] = [
+      '#type' => 'details',
+      '#title' => t('Negative responses'),
+      '#description' => t('The negative that will be selected at random if the correct answer is wrong.'),
+      '#open' => FALSE,
+    ];
+
+    $form['replies_bad']['negative_response'] = [
+      '#type' => 'textarea',
+      '#title' => t('Negative responses'),
+      '#description' => t('Enter a comma separated list of responses.'),
+      '#default_value' => $tffc_config->get('negative_response') ?? 'Wrong, Incorrect, Nope',
+    ];
+
+
+    $form['replies_limit'] = [
+      '#type' => 'details',
+      '#title' => t('Finished responses'),
+      '#description' => t('The response that will be selected at random if the run out of guesses.'),
+      '#open' => FALSE,
+    ];
+
+    $form['replies_limit']['finished_response'] = [
+      '#type' => 'textarea',
+      '#title' => t('Finished responses'),
+      '#description' => t('Enter a comma separated list of responses.'),
+      '#default_value' => $tffc_config->get('finished_response') ?? 'Out of guesses, Sorry you did not get it this time, Better luck next time',
+    ];
+
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -67,6 +111,9 @@ class TffcSettingsForm extends ConfigFormBase {
     $this->config('tffc.settings')
       ->set('enabled', $values['enabled'])
       ->set('guesses', $values['guesses'])
+      ->set('positive_response', $values['positive_response'])
+      ->set('negative_response', $values['negative_response'])
+      ->set('finished_response', $values['finished_response'])
       ->save();
 
     parent::submitForm($form, $form_state);

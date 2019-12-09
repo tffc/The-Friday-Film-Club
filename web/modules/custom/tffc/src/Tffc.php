@@ -90,10 +90,16 @@ class Tffc {
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public static function create_comment_reply($entity_id, $hints = [], $pid = FALSE, $uid = FALSE, $correct = FALSE) {
+    $tffc_config = \Drupal::config('tffc.settings');
+    $guesses = $tffc_config->get('guesses') ?? 3;
+
     $reply = '';
 
     if ($correct) {
       $reply .= '<p class="comment-response comment-response-correct">' . self::random_correct_response() . '</p>';
+    }
+    elseif ((int) $hints['count'] >= (int) $guesses) {
+      $reply .= '<p class="comment-response comment-response-limit">' . self::random_limit_response() . '</p>';
     }
     else {
       $reply .= '<p class="comment-response comment-response-wrong">' . self::random_wrong_response() . '</p>';
@@ -154,21 +160,11 @@ class Tffc {
    * @return bool
    */
   public static function is_question_complete($nid, $uid, $return_score = FALSE) {
-    $tffc_config = \Drupal::config('tffc.settings');
-    $guesses = $tffc_config->get('guesses') ?? 3;
-
     $score = FALSE;
 
     $is_closed = FALSE;
 
     $comments = self::load_comments_by_nid($nid, $uid);
-    $count = count($comments);
-
-    // if the number of comments
-    // is equal to the number of allowed comments
-    if ($count >= $guesses) {
-      return TRUE;
-    }
 
     // check if any of the comments says the comment is correct
     if ($comments) {
@@ -186,38 +182,58 @@ class Tffc {
   }
 
   /**
-   * Returns a random wrong response
-   *
-   * @return mixed
-   */
-  private static function random_wrong_response() {
-    $options = [
-      t('Sorry that is not correct'),
-      t('Nope, not quite right.'),
-      t('Try again...'),
-    ];
-
-    $index = array_rand($options);
-
-    return $options[$index];
-  }
-
-  /**
    * Returns a random correct response
    *
    * @return mixed
    */
   private static function random_correct_response() {
-    $options = [
-      t('Yes! Well done!!'),
-      t('Correct, How did you know!?'),
-      t('Exactly!'),
-    ];
-
-    $index = array_rand($options);
-
-    return $options[$index];
+    return self::random_response('positive_response');
   }
+
+  /**
+   * Returns a random wrong response
+   *
+   * @return mixed
+   */
+  private static function random_wrong_response() {
+    return self::random_response('negative_response');
+  }
+
+  /**
+   * Returns a random limit hit response
+   *
+   * @return mixed
+   */
+  private static function random_limit_response() {
+    return self::random_response('finished_response');
+  }
+
+  /**
+   * Gets a type of response
+   *
+   * @param $type
+   *
+   * @return string
+   */
+  private static function random_response($type) {
+    // load the config and get the response type
+    $tffc_config = \Drupal::config('tffc.settings');
+    $responses = $tffc_config->get($type) ?? '';
+
+    // separate by commas
+    $options = explode(',', $responses);
+
+    if (!empty($options)) {
+      // make sure each value has no extra spaces
+      $options = array_map('trim', $options);
+      $index = array_rand($options);
+      return $options[$index];
+    }
+
+    // if we could not find anything
+    return '';
+  }
+
 
   /**
    * Returns the hint options

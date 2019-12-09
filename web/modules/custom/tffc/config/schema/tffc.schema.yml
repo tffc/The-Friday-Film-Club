@@ -1,3 +1,23 @@
+tffc.settings:
+  type: config_object
+  label: 'TFFC settings'
+  mapping:
+    enabled:
+      type: boolean
+      label: 'Add notification message when comment posted'
+    guesses:
+      type: int
+      label: 'Enable scrolling events'
+    positive_response:
+      type: string
+      label: 'The positive responses'
+    negative_response:
+      type: string
+      label: 'The negative responses'
+    finished_response:
+      type: string
+      label: 'The finished responses'
+
 field.formatter.settings.field_tffc_points_countdown_formatter:
   type: mapping
   label: 'Points countdown formatter'

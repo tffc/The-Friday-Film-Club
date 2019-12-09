@@ -394,6 +394,8 @@ function tffc_preprocess_field(&$variables, $hook) {
           if ($isComplete) {
             $points = $isComplete;
 
+            dpm($points);
+
             $variables['items'][0]['content']['#total_points'] = $points;
             $variables['items'][0]['content']['#options']['enabled'] = FALSE;
           }

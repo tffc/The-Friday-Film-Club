@@ -1,0 +1,6 @@
+name: The Friday Film Club Importer
+description: 'Imports films into the system'
+type: module
+core: 8.x
+package: The Friday Film Club
+configure: tffc_importer.config

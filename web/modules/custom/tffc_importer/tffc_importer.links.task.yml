@@ -1,0 +1,10 @@
+tffc_importer.config:
+  route_name: tffc_importer.config
+  title: Settings
+  weight: 0
+  base_route: tffc_importer.config
+tffc_importer.batch:
+  route_name: tffc_importer.batch
+  title: Batch Import
+  weight: 1
+  base_route: tffc_importer.config

@@ -1,0 +1,7 @@
+configure tffc importer:
+  title: 'Configure TFFC Importer'
+  description: 'Allows configuration of settings for The Friday Film Club Importer'
+  restrict access: TRUE
+use tffc importer:
+  title: 'Use TFFC Test Page'
+  description: 'Gives the ability to use the test page'

@@ -1,0 +1,29 @@
+tffc_importer.settings:
+  type: config_object
+  label: 'TFFC Importer Settings'
+  mapping:
+    enabled:
+      type: boolean
+      label: 'If the importer is enabled'
+    omdb_key:
+      type: string
+      label: 'The OMDb ID'
+    last_id:
+      type: string
+      label: 'The last imported ID'
+    validate:
+      type: boolean
+      label: 'State if we should validate or not'
+    type_validation:
+      type: string
+      label: 'What type of item to import'
+    votes_threshold:
+      type: string
+      label: 'The required votes to import'
+    rating_threshold:
+      type: string
+      label: 'The required rating to import'
+    release_threshold:
+      type: string
+      label: 'The required release date to import'
+

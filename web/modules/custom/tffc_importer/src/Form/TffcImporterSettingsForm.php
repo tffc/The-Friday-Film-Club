@@ -43,7 +43,7 @@ class TffcImporterSettingsForm extends ConfigFormBase {
       '#type' => 'checkbox',
       '#title' => t('Enabled'),
       '#description' => t('Flag to enable/disable importer.'),
-      '#default_value' => $tffc_config->get('enabled') ?? FALSE,
+      '#default_value' => $tffc_config->get('enabled') ?? TFFC_IMPORT_ENABLED,
     ];
 
 

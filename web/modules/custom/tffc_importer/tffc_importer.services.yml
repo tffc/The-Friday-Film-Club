@@ -1,0 +1,3 @@
+services:
+  tffc.importer:
+    class: Drupal\tffc_importer\Services\TffcImporter

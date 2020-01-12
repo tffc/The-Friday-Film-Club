@@ -49,7 +49,7 @@ class TffcImporterBatchForm extends FormBase {
     $values = $form_state->getValues();
     $number = $values['number'];
 
-    \Drupal::messenger()->addMessage($number);
+    \Drupal::messenger()->addMessage("Trying to import $number films.");
 
 
     $batch = [

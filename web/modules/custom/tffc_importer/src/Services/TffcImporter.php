@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tffc_importer;
+namespace Drupal\tffc_importer\Services;
 
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
@@ -23,6 +23,11 @@ use Rooxie\OMDb as OMDb;
  */
 class TffcImporter {
 
+  /**
+   * The user we assigned the importing too
+   *
+   * @var int
+   */
   protected $uid = 50;
 
   /**

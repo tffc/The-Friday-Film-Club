@@ -1,7 +1,48 @@
 <?php
 
+define('TFFC_IMPORT_ENABLED', FALSE);
 define('TFFC_IMPORT_DEFAULT_LAST_ID', 'tt00000001');
 define('TFFC_IMPORT_DEFAULT_VOTES', '1000');
 define('TFFC_IMPORT_DEFAULT_RATING', '3.2');
 define('TFFC_IMPORT_DEFAULT_TYPE', 'any');
 define('TFFC_IMPORT_DEFAULT_RELEASE', '1960-01-01');
+
+/**
+ * hook_cron
+ */
+function tffc_importer_cron() {
+  $tffc_config = \Drupal::config('tffc_importer.settings');
+  $importer_enabled = $tffc_config->get('enabled') ?? TFFC_IMPORT_ENABLED;
+
+  // if enabled import one
+  if($importer_enabled){
+    $watchdog = \Drupal::logger('tffc_importer');
+    $TffcImporter = \Drupal::service('tffc.importer');
+    $response = $TffcImporter->run();
+
+    if (!empty($response)) {
+      $errors = $response['errors'];
+      $success = $response['success'];
+      $info = $response['info'];
+
+      if(!empty($errors)){
+        foreach ($errors as $e){
+          $watchdog->error($e);
+        }
+      }
+
+      if(!empty($info)){
+        foreach ($info as $i){
+          $watchdog->notice($i);
+        }
+      }
+
+      if(!empty($success)){
+        foreach ($success as $s){
+          $watchdog->log($s);
+        }
+      }
+
+    }
+  }
+}

@@ -10,12 +10,11 @@ namespace Drupal\tffc_importer;
  */
 class TffcImporterBatch {
 
-
   /**
    * @param $context
    */
   public static function run(&$context) {
-    $TffcImporter = new TffcImporter();
+    $TffcImporter = \Drupal::service('tffc.importer');
     $response = $TffcImporter->run();
     $context['results'][] = $response;
   }

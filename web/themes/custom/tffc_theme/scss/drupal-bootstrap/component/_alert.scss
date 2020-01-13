@@ -5,27 +5,20 @@
   padding: 5px 10px;
 }
 
-// Treat all links inside alert as .alert-link
-.alert a {
-  font-weight: $alert-link-font-weight;
-}
-.alert-success {
-  a, a:hover, a:focus {
-    color: darken($alert-success-text, 10%);
-  }
-}
-.alert-info {
-  a, a:hover, a:focus {
-    color: darken($alert-info-text, 10%);
+.alert {
+  text-align:center;
+  border-radius:10px;
+  color: #fff;
+  background: transparent;
+  border-width:2px;
+  font-size:21px;
+  a {
+    font-weight: $alert-link-font-weight;
+    color:inherit;
+    text-decoration: underline;
   }
 }
 .alert-warning {
-  a, a:hover, a:focus {
-    color: darken($alert-warning-text, 10%);
-  }
-}
-.alert-danger {
-  a, a:hover, a:focus {
-    color: darken($alert-danger-text, 10%);
-  }
+  border-color:#fd70d1;
+  box-shadow: 0px 0px 35px rgba(220, 46, 165, 0.1), 0 0 11px rgba(220, 46, 165, 0.3), 0 0 2px rgba(255, 0, 0, 0.1), 0 0 1px rgba(220, 46, 165, 0.2), 0 0px 17px rgba(220, 46, 165, 0.3), inset 0px 0 17px rgba(220, 46, 165, 0.2), inset 0px 0 30px rgba(220, 46, 165, 0.1);
 }

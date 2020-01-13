@@ -13,3 +13,15 @@
 .node-preview-form-select {
   padding: ($grid-gutter-width / 2);
 }
+
+.page-header {
+	border:0;
+}
+
+.path-leaderboard {
+	.page-header {
+		font-weight:bold;
+		text-transform: uppercase;
+		text-align:center;
+	}
+}

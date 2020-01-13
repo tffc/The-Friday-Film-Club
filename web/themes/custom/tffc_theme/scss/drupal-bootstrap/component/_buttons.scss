@@ -1,0 +1,17 @@
+.btn {
+	border-radius:100px;
+	border-width:2px;
+	padding:10px 25px;
+	transition:all 0.15s ease-in-out;
+	text-transform:uppercase;
+	font-size:19px;
+}
+.btn-primary {
+	background-color:transparent;
+	border-color:#9cf5fd;
+	box-shadow:0px 0px 35px rgba(27, 185, 199, 0.3), 0 0 11px rgba(27, 185, 199, 0.3), 0 0 2px rgba(255, 0, 0, 0.3), 0 0 1px rgba(27, 185, 199, 0.3), 0 0px 17px rgba(27, 185, 199, 0.3), inset 0px 0 17px rgba(27, 185, 199, 0.3), inset 0px 0 30px rgba(27, 185, 199, 0.3);
+	&:hover,
+	&:focus {
+		border-color:#9cf5fd;
+	}
+}

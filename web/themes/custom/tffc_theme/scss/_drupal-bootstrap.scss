@@ -1,18 +1,19 @@
+@import "drupal-bootstrap/component/global";
+@import "drupal-bootstrap/component/buttons";
 @import "drupal-bootstrap/component/alert";
 @import "drupal-bootstrap/component/ajax";
 @import "drupal-bootstrap/component/field";
 @import "drupal-bootstrap/component/file";
-@import "drupal-bootstrap/component/filter";
+@import "drupal-bootstrap/component/footer";
 @import "drupal-bootstrap/component/form";
 @import "drupal-bootstrap/component/icon";
 @import "drupal-bootstrap/component/navbar";
 @import "drupal-bootstrap/component/node";
-@import "drupal-bootstrap/component/panel";
+@import "drupal-bootstrap/component/front";
 @import "drupal-bootstrap/component/progress-bar";
 @import "drupal-bootstrap/component/table-drag";
 @import "drupal-bootstrap/component/tabs";
 @import "drupal-bootstrap/component/toolbar";
-@import "drupal-bootstrap/component/comments";
 
 // jQuery UI style overrides.
 @import "drupal-bootstrap/jquery-ui/autocomplete";
@@ -27,14 +28,6 @@ ol, ul {
 // Page header.
 .page-header {
   margin-top: 0;
-}
-
-// Footer.
-.footer {
-  margin-top: 45px;
-  padding-top: 35px;
-  padding-bottom: 36px;
-  border-top: 1px solid #E5E5E5;
 }
 
 // Paragraphs.

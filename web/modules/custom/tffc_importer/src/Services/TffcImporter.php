@@ -23,6 +23,8 @@ use Rooxie\OMDb as OMDb;
  */
 class TffcImporter {
 
+  private $config;
+
   /**
    * The user we assigned the importing too
    *
@@ -109,22 +111,8 @@ class TffcImporter {
    * TffcImporter constructor.
    */
   public function __construct() {
-    $tffc_config = \Drupal::config('tffc_importer.settings');
-    $api_key = $tffc_config->get('omdb_key') ?? FALSE;
-    $last_id = $tffc_config->get('last_id') ?? TFFC_IMPORT_DEFAULT_LAST_ID;
-    $validate = $tffc_config->get('validate') ?? FALSE;
-    $votes_threshold = $tffc_config->get('votes_threshold') ?? TFFC_IMPORT_DEFAULT_VOTES;
-    $rating_threshold = $tffc_config->get('rating_threshold') ?? TFFC_IMPORT_DEFAULT_RATING;
-    $type_validation = $tffc_config->get('type_validation') ?? TFFC_IMPORT_DEFAULT_TYPE;
-    $release_threshold = $tffc_config->get('release_threshold') ?? TFFC_IMPORT_DEFAULT_RELEASE;
-
-
-    $this->last_id = $last_id;
-    $this->validation = $validate;
-    $this->votes_threshold = $votes_threshold;
-    $this->rating_threshold = $rating_threshold;
-    $this->type_validation = $type_validation;
-    $this->release_threshold = $release_threshold;
+    $this->config = \Drupal::config('tffc_importer.settings');
+    $api_key = $this->config->get('omdb_key') ?? FALSE;
 
     $this->api_key = $api_key;
     $this->omdb = new OMDb($this->api_key);
@@ -133,9 +121,53 @@ class TffcImporter {
     $this->log = ['errors' => [], 'info' => [], 'success' => []];
   }
 
+  public function init() {
+    $last_id = $this->config->get('last_id') ?? TFFC_IMPORT_DEFAULT_LAST_ID;
+    $validate = $this->config->get('validate') ?? FALSE;
+    $votes_threshold = $this->config->get('votes_threshold') ?? TFFC_IMPORT_DEFAULT_VOTES;
+    $rating_threshold = $this->config->get('rating_threshold') ?? TFFC_IMPORT_DEFAULT_RATING;
+    $type_validation = $this->config->get('type_validation') ?? TFFC_IMPORT_DEFAULT_TYPE;
+    $release_threshold = $this->config->get('release_threshold') ?? TFFC_IMPORT_DEFAULT_RELEASE;
+
+
+    $this->last_id = $last_id;
+    $this->validation = $validate;
+    $this->votes_threshold = $votes_threshold;
+    $this->rating_threshold = $rating_threshold;
+    $this->type_validation = $type_validation;
+    $this->release_threshold = $release_threshold;
+  }
+
+  /**
+   * Import one film
+   *
+   * @return array
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
   public function run() {
+    $this->init();
     $this->getFilm();
     $this->addToDrupal();
+
+    return $this->log;
+  }
+
+  /**
+   * Import a certain number of films
+   *
+   * @param int $number
+   *
+   * @return array
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  public function importX(int $number = 0) {
+    if ($number > 0) {
+      for ($i = 0; $i <= $number; $i++) {
+        $this->run();
+      }
+    }
 
     return $this->log;
   }
@@ -192,8 +224,11 @@ class TffcImporter {
     $this->setLastImdbId($this->getNextImdbId());
 
     // next check that we can import this film
-    if (!$this->canImport()) {
-      $this->setError(t('Cannot import this item, as it did not meet the requirements.'));
+    $canImport = $this->canImport();
+    if ($canImport !== TRUE) {
+      $this->setError(t('Cannot import this item, as it did not meet the requirements. For the following reasons: @reasons', [
+        '@reasons' => implode("<br>", $canImport),
+      ]));
       return FALSE;
     }
 
@@ -252,14 +287,16 @@ class TffcImporter {
   /**
    * We want to check if the film meets the requirements to be imported
    *
-   * @return bool
+   * @return array|bool
    */
-  protected function canImport(): bool {
+  protected function canImport() {
     // if validation is disabled
     // don't check we can import
     if (!$this->validation) {
       return TRUE;
     }
+
+    $reasons = [];
 
     $state = TRUE;
 
@@ -282,18 +319,18 @@ class TffcImporter {
 
       // make sure that the rating and votes meets or exceeds the requirements
       if ($votes < $this->votes_threshold) {
-        $this->setInformation(t('Fail validating the voting, wanted: @wanted or greater | found: @found', [
+        $reasons[] = t('Fail validating the voting, wanted: @wanted or greater | found: @found', [
           '@wanted' => $this->votes_threshold,
           '@found' => $votes,
-        ]));
+        ]);
         $state = FALSE;
       }
 
       if ($rating < $this->rating_threshold) {
-        $this->setInformation(t('Fail validating the rating, wanted: @wanted or greater | found: @found', [
+        $reasons[] = t('Fail validating the rating, wanted: @wanted or greater | found: @found', [
           '@wanted' => $this->rating_threshold,
           '@found' => $rating,
-        ]));
+        ]);
         $state = FALSE;
       }
 
@@ -301,10 +338,10 @@ class TffcImporter {
       // change the state to false
       if ($this->type_validation !== 'any') {
         if ($this->type_validation !== $type) {
-          $this->setInformation(t('Fail validating the type, wanted: @wanted | found: @found', [
+          $reasons[] = t('Fail validating the type, wanted: @wanted | found: @found', [
             '@wanted' => $this->type_validation,
             '@found' => $type,
-          ]));
+          ]);
           $state = FALSE;
         }
       }
@@ -312,17 +349,17 @@ class TffcImporter {
       // check if the release date has been met, this it to prevent
       // really really really old films on coming into the system
       if (strtotime($release) < strtotime($this->release_threshold)) {
-        $this->setInformation(t('Fail validating the release, wanted: @wanted or greater | found: @found', [
+        $reasons[] = t('Fail validating the release, wanted: @wanted or greater | found: @found', [
           '@wanted' => date('d-m-Y', strtotime($this->release_threshold)),
           '@found' => date('d-m-Y', strtotime($release)),
-        ]));
+        ]);
         $state = FALSE;
       }
 
     }
 
     $this->setCanImport($state);
-    return $this->getCanImport();
+    return $this->getCanImport() === TRUE ? TRUE : $reasons;
   }
 
   /**

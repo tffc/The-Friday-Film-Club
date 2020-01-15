@@ -46,6 +46,14 @@ class TffcImporterSettingsForm extends ConfigFormBase {
       '#default_value' => $tffc_config->get('enabled') ?? TFFC_IMPORT_ENABLED,
     ];
 
+    $form['general']['import_amount'] = [
+      '#type' => 'number',
+      '#min' => 0,
+      '#title' => t('Import amount'),
+      '#description' => t('The number of films to try and import when the cron runs.'),
+      '#default_value' => $tffc_config->get('import_amount') ?? TFFC_IMPORT_CRON_AMOUNT,
+    ];
+
 
     $form['omdb'] = [
       '#type' => 'details',
@@ -112,7 +120,6 @@ class TffcImporterSettingsForm extends ConfigFormBase {
       '#default_value' => $tffc_config->get('release_threshold') ?? TFFC_IMPORT_DEFAULT_RELEASE,
     ];
 
-
     return parent::buildForm($form, $form_state);
   }
 
@@ -124,6 +131,7 @@ class TffcImporterSettingsForm extends ConfigFormBase {
 
     $this->config('tffc_importer.settings')
       ->set('enabled', $values['enabled'])
+      ->set('import_amount', $values['import_amount'])
       ->set('omdb_key', $values['omdb_key'])
       ->set('last_id', $values['last_id'])
       ->set('votes_threshold', $values['votes_threshold'])

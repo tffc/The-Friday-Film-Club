@@ -164,7 +164,7 @@ function tffc_comment_presave(&$comment) {
 }
 
 /**
- * Implements hook_aggregator_fetcher_info_alter().
+ * Implements hook_comment_insert().
  *
  * @param \Drupal\Core\Entity\EntityInterface $comment
  */
@@ -318,7 +318,9 @@ function tffc_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_stat
     if ($node instanceof \Drupal\node\NodeInterface) {
       $nid = $node->id();
       if ($current_uid && Tffc::is_question_complete($nid, $current_uid)) {
-        $form = [];
+        $form = [
+          '#parents' => [],
+        ];
       }
     }
   }

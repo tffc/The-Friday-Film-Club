@@ -50,7 +50,7 @@ function tffc_theme() {
  *
  * @param $comment
  */
-function tffc_comment_presave(&$comment) {
+function tffc_comment_presave($comment) {
   // load config settings
   $tffc_config = \Drupal::config('tffc.settings');
   $enabled = $tffc_config->get('enabled') ?? FALSE;
@@ -395,8 +395,6 @@ function tffc_preprocess_field(&$variables, $hook) {
           $isComplete = Tffc::is_question_complete($nid, $uid, TRUE);
           if ($isComplete) {
             $points = $isComplete;
-
-            dpm($points);
 
             $variables['items'][0]['content']['#total_points'] = $points;
             $variables['items'][0]['content']['#options']['enabled'] = FALSE;

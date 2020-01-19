@@ -23,10 +23,11 @@ class TffcImporterBatchForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form['number'] = [
       '#type' => 'number',
-      '#title' => $this->t('Number to import'),
+      '#title' => $this->t('Number to sync'),
       '#description' => $this->t('Please enter the number of films to try and import.'),
       '#default_value' => 60,
     ];
+
     $form['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Import'),

@@ -3,7 +3,6 @@
 namespace Drupal\tffc_importer\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\tffc_importer\TffcImporter;
 
 /**
  * Class TestController
@@ -19,14 +18,20 @@ class TestController extends ControllerBase {
    */
   public function testPage() {
 
-    $tffcImporter = new TffcImporter();
-    $films = [];
-//    $films = $tffcImporter->getFilm('tt0246578');
-//    $tffcImporter->addToDrupal();
+    $TffcSync = \Drupal::service('tffc.sync');
+    $syncableFilms = $TffcSync->getSyncableFilms();
+    $TffcSync->syncInformation(114);
+    $errors = $TffcSync->getErrors();
+
+    //    if (!empty($syncableFilms)) {
+    //      foreach ($syncableFilms as $nid) {
+    //        $TffcSync->syncInformation($nid);
+    //      }
+    //    }
 
 
     $element = [
-      '#markup' => "<pre>" . print_r($films, TRUE) . "</pre>",
+      '#markup' => "<pre>" . print_r($syncableFilms, TRUE) . print_r($errors, TRUE) . "</pre>",
     ];
     return $element;
   }

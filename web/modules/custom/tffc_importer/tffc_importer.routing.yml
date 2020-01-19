@@ -14,6 +14,14 @@ tffc_importer.batch:
   requirements:
     _permission: 'configure tffc importer'
 
+tffc_importer.sync:
+  path: '/admin/config/system/tffc/importer/sync'
+  defaults:
+    _form: '\Drupal\tffc_importer\Form\TffcImporterSyncBatchForm'
+    _title: 'The Friday Film Club Batch Sync'
+  requirements:
+    _permission: 'configure tffc importer'
+
 tffc_importer.test_page:
   path: '/tffc/importer/test'
   defaults:

@@ -98,7 +98,12 @@ class TffcSync {
       return;
     }
 
-    $this->getObscuredImage();
+    try {
+      $this->getObscuredImage();
+    } catch (\Exception $e) {
+      $this->setError($e->getMessage());
+      return;
+    }
 
     try {
       $this->generateHints();
@@ -107,15 +112,30 @@ class TffcSync {
       return;
     }
 
-    $this->saveNode();
+    $this->markAllInformationAsComplete();
 
+    $this->saveNode();
   }
 
   /**
    * Gets the obscured Image
+   *
+   * @throws \Exception
    */
   protected function getObscuredImage() {
+    $title = $this->node->getTitle();
+    $movieScreencaps = \Drupal::service('tffc.screencaps');
+    $img = $movieScreencaps->search($title);
 
+    if ($img) {
+      $name = substr(str_shuffle(MD5(microtime())), 0, 21);
+      $target_id = $this->createMedia($img, $name, 'obscured_image', 'field_media_image_2', 'tffc/obscured');
+      $this->node->set('field_obscured_image', $target_id);
+      $this->changed = TRUE;
+      return TRUE;
+    }
+
+    throw new \Exception('Could not get Image');
   }
 
 
@@ -198,7 +218,8 @@ class TffcSync {
    * Marks a node as complete with information
    */
   protected function markAllInformationAsComplete() {
-
+    $this->node->set('field_complete', TRUE);
+    $this->changed = TRUE;
   }
 
   /**

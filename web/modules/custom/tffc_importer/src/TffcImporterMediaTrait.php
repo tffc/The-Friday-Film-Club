@@ -9,6 +9,13 @@ use Drupal\media\Entity\Media;
 trait TffcImporterMediaTrait {
 
   /**
+   * The user we assigned the importing too
+   *
+   * @var int
+   */
+  protected $uid = 50;
+
+  /**
    * Create media uses combines both createImageFromUrl & setFidOnMedia
    * To make a new media item
    *

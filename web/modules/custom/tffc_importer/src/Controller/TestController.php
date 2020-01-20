@@ -18,10 +18,13 @@ class TestController extends ControllerBase {
    */
   public function testPage() {
 
-    $TffcSync = \Drupal::service('tffc.sync');
-    $syncableFilms = $TffcSync->getSyncableFilms();
-    $TffcSync->syncInformation(114);
-    $errors = $TffcSync->getErrors();
+    //    $TffcSync = \Drupal::service('tffc.sync');
+    //    $syncableFilms = $TffcSync->getSyncableFilms();
+    //    $TffcSync->syncInformation(114);
+    //    $errors = $TffcSync->getErrors();
+
+    $movieScreencaps = \Drupal::service('tffc.screencaps');
+    $img = $movieScreencaps->search('Avengers');
 
     //    if (!empty($syncableFilms)) {
     //      foreach ($syncableFilms as $nid) {
@@ -31,7 +34,8 @@ class TestController extends ControllerBase {
 
 
     $element = [
-      '#markup' => "<pre>" . print_r($syncableFilms, TRUE) . print_r($errors, TRUE) . "</pre>",
+      //      '#markup' => "<pre>" . print_r($syncableFilms, TRUE) . print_r($errors, TRUE) . "</pre>",
+      '#markup' => $img ? "<img src='$img'>" : "No Image found",
     ];
     return $element;
   }

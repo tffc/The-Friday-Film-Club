@@ -70,6 +70,21 @@ class TffcSync {
   }
 
   /**
+   * A list of all films that cannot be sync'ed
+   *
+   * @return array|int
+   */
+  public function getUnsyncableFilms(){
+    $query = \Drupal::entityQuery('node')
+      ->condition('type', 'film')
+      ->condition('field_validated', FALSE)
+      ->condition('field_complete', FALSE)
+      ->condition('field_no_info', FALSE, '<>');
+
+    return $query->execute();
+  }
+
+  /**
    * Gets all films that are syncable
    *
    * @return array|int
@@ -77,8 +92,9 @@ class TffcSync {
   public function getSyncableFilms() {
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'film')
-      ->condition('field_validated', FALSE)
-      ->condition('field_complete', FALSE);
+      ->condition('field_validated', TRUE, '<>')
+      ->condition('field_complete', TRUE, '<>')
+      ->condition('field_no_info', TRUE, '<>');
 
     return $query->execute();
   }
@@ -88,6 +104,7 @@ class TffcSync {
    *
    * @param int $nid
    *
+   * @return \Drupal\tffc_importer\Services\TffcSync|void
    */
   public function syncInformation(int $nid) {
 
@@ -95,26 +112,31 @@ class TffcSync {
       $this->loadNode($nid);
     } catch (\Exception $e) {
       $this->setError($e->getMessage());
-      return;
+      $this->markCannotGetInformation();
+      return $this;
     }
 
     try {
       $this->getObscuredImage();
     } catch (\Exception $e) {
       $this->setError($e->getMessage());
-      return;
+      $this->markCannotGetInformation();
+      return $this;
     }
 
     try {
       $this->generateHints();
     } catch (\Exception $e) {
       $this->setError($e->getMessage());
-      return;
+      $this->markCannotGetInformation();
+      return $this;
     }
 
     $this->markAllInformationAsComplete();
-
     $this->saveNode();
+    $this->setSuccess('Updated all information');
+
+    return $this;
   }
 
   /**
@@ -199,27 +221,20 @@ class TffcSync {
   }
 
   /**
-   * @return array
-   */
-  public function getErrors(): array {
-    return $this->errors;
-  }
-
-  /**
-   * Set error
-   *
-   * @param $error
-   */
-  protected function setError($error) {
-    $this->errors[] = t('nid: @nid', ['@nid' => $this->nid]) . " - " . $error;
-  }
-
-  /**
    * Marks a node as complete with information
    */
   protected function markAllInformationAsComplete() {
     $this->node->set('field_complete', TRUE);
     $this->changed = TRUE;
+  }
+
+  /**
+   * Marks a node as complete with information
+   */
+  protected function markCannotGetInformation() {
+    $this->node->set('field_no_info', TRUE);
+    $this->changed = TRUE;
+    $this->node->save();
   }
 
   /**
@@ -318,6 +333,36 @@ class TffcSync {
     }
 
     return $output;
+  }
+
+  /**
+   * @return array
+   */
+  public function getSuccess(): array {
+    return $this->success;
+  }
+
+  /**
+   * @param string $success
+   */
+  protected function setSuccess(string $success) {
+    $this->success[] = t('nid: @nid', ['@nid' => $this->nid]) . " - " . $success;;
+  }
+
+  /**
+   * @return array
+   */
+  public function getErrors(): array {
+    return $this->errors;
+  }
+
+  /**
+   * Set error
+   *
+   * @param $error
+   */
+  protected function setError($error) {
+    $this->errors[] = t('nid: @nid', ['@nid' => $this->nid]) . " - " . $error;
   }
 
 }

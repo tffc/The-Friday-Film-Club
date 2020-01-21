@@ -23,20 +23,37 @@ class TffcImporterSyncBatchForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $TffcSync = \Drupal::service('tffc.sync');
     $syncableFilms = $TffcSync->getSyncableFilms();
+    $unsyncableFilms = $TffcSync->getUnsyncableFilms();
     $allFilms = $TffcSync->getAllFilms();
+
     $syncCount = count($syncableFilms);
+    $unsyncCount = count($unsyncableFilms);
     $filmsCount = count($allFilms);
 
+
+    $text = t('<strong>@all</strong> total films found in the system.', [
+      '@all' => $filmsCount,
+    ]);
+
+    $text .= "<br>" . t('There are <strong>@sync</strong> films ready for syncing.', [
+        '@sync' => $syncCount,
+      ]);
+
+    if ($unsyncCount > 0) {
+      $text .= "<br>" . t('There are also <strong>@unsync</strong> films that we tried to sync but to complete.', [
+          '@unsync' => $unsyncCount,
+        ]);
+    }
+
     $form['info'] = [
-      '#markup' => "<p>" . t('There are currently <i>@sync</i> films out of <i>@all</i> ready to sync extra information.', ['@sync' => $syncCount, '@all' => $filmsCount]) . "</p>",
+      '#markup' => "<p>" . $text . "</p>",
     ];
 
-    if ($syncCount > 0) {
-      $form['submit'] = [
-        '#type' => 'submit',
-        '#value' => $this->t('Sync all details'),
-      ];
-    }
+    $form['submit'] = [
+      '#type' => 'submit',
+      '#value' => $syncCount > 0 ? $this->t('Sync all details') : $this->t('Nothing to sync'),
+      '#disabled' => $syncCount > 0 ? FALSE : TRUE,
+    ];
 
     return $form;
   }
@@ -52,10 +69,34 @@ class TffcImporterSyncBatchForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $values = $form_state->getValues();
-    $number = $values['number'];
+    $TffcSync = \Drupal::service('tffc.sync');
+    $syncableFilms = $TffcSync->getSyncableFilms();
+    $syncCount = count($syncableFilms);
 
-    \Drupal::messenger()->addMessage("Trying to sync $number films . ");
+
+    \Drupal::messenger()->addMessage("Trying to sync $syncCount films. ");
+
+    if ($syncCount > 0) {
+
+      $batch = [
+        'title' => t('Syncing Films...'),
+        'operations' => [],
+        'init_message' => t('Starting Sync...'),
+        'progress_message' => t('Processed @current out of @total.'),
+        'error_message' => t('An error occurred during processing'),
+        'finished' => '\Drupal\tffc_importer\TffcImporterSyncBatch::callback',
+      ];
+
+      foreach ($syncableFilms as $film) {
+        $batch['operations'][] = [
+          '\Drupal\tffc_importer\TffcImporterSyncBatch::run',
+          [$film],
+        ];
+      }
+
+      batch_set($batch);
+    }
   }
+
 
 }

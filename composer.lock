@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "08a64dfcaf91a04a53e24f91f85b6a77",
+    "content-hash": "29d5a30a6f7eb91642ed9c2dffa879c4",
     "packages": [
         {
             "name": "alchemy/zippy",
@@ -4041,6 +4041,53 @@
             "support": {
                 "source": "https://github.com/dpi/unlimited_number",
                 "issues": "https://github.com/dpi/unlimited_number/issues"
+            }
+        },
+        {
+            "name": "drupal/user_menu_avatar",
+            "version": "4.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/user_menu_avatar.git",
+                "reference": "8.x-4.0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/user_menu_avatar-8.x-4.0.zip",
+                "reference": "8.x-4.0",
+                "shasum": "43c8a9a06e4139b8389d35cf9ab9af474602b85a"
+            },
+            "require": {
+                "drupal/core": "*"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "branch-alias": {
+                    "dev-4.x": "4.x-dev"
+                },
+                "drupal": {
+                    "version": "8.x-4.0",
+                    "datestamp": "1554992881",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "prestosaurus",
+                    "homepage": "https://www.drupal.org/user/3594865"
+                }
+            ],
+            "description": "Replaces a menu defined \"link title\" with the current user picture and/or the username. ",
+            "homepage": "https://www.drupal.org/project/user_menu_avatar",
+            "support": {
+                "source": "https://git.drupalcode.org/project/user_menu_avatar"
             }
         },
         {

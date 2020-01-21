@@ -27,6 +27,11 @@ class MovieScreencaps {
   private $currentUrl;
 
   /**
+   * @var
+   */
+  private $randomPageUrl;
+
+  /**
    * @var \PHPHtmlParser\Dom
    */
   private $dom;
@@ -71,7 +76,8 @@ class MovieScreencaps {
       $this->page = $this->getRandomPage();
       $this->currentUrl = $this->getCurrentPageUrl();
 
-      if ($this->loadRandomPage()) {
+      $this->randomPageUrl = $this->loadRandomPage();
+      if ($this->randomPageUrl) {
         return $this->getRandomImage();
       }
     }
@@ -98,7 +104,7 @@ class MovieScreencaps {
       } catch (StrictException $e) {
         return FALSE;
       }
-      return TRUE;
+      return $randomPage;
     }
     return FALSE;
   }
@@ -237,6 +243,13 @@ class MovieScreencaps {
     $max = $max - 1;
     $max = $max < 1 ? 0 : $max;
     return rand(0, $max);
+  }
+
+  /**
+   * @return mixed
+   */
+  public function getRandomPageUrl() {
+    return $this->randomPageUrl;
   }
 
 }

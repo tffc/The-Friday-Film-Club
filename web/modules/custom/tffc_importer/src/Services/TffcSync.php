@@ -166,6 +166,7 @@ class TffcSync {
       $name = substr(str_shuffle(MD5(microtime())), 0, 21);
       $target_id = $this->createMedia($img, $name, 'obscured_image', 'field_media_image_2', 'tffc/obscured');
       $this->node->set('field_obscured_image', $target_id);
+      $this->node->set('field_obscured_image_reference', $movieScreencaps->getRandomPageUrl());
       $this->changed = TRUE;
       return TRUE;
     }

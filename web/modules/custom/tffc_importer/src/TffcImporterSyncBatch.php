@@ -14,8 +14,8 @@ class TffcImporterSyncBatch {
    * @param $context
    */
   public static function run($nid, &$context) {
-    $TffcImporter = \Drupal::service('tffc.sync');
-    $response = $TffcImporter->syncInformation($nid);
+    $TffcSync = \Drupal::service('tffc.sync');
+    $response = $TffcSync->syncInformation($nid);
     $context['results'][] = $response;
   }
 

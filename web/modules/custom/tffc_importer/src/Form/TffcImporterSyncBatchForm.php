@@ -25,22 +25,30 @@ class TffcImporterSyncBatchForm extends FormBase {
     $syncableFilms = $TffcSync->getSyncableFilms();
     $unsyncableFilms = $TffcSync->getUnsyncableFilms();
     $allFilms = $TffcSync->getAllFilms();
+    $completedFilms = $TffcSync->getCompletedFilms();
 
     $syncCount = count($syncableFilms);
     $unsyncCount = count($unsyncableFilms);
     $filmsCount = count($allFilms);
+    $completedCount = count($completedFilms);
 
 
     $text = t('<strong>@all</strong> total films found in the system.', [
       '@all' => $filmsCount,
     ]);
 
-    $text .= "<br>" . t('There are <strong>@sync</strong> films ready for syncing.', [
+    $text .= "<br>" . t('<strong>@sync</strong> films ready for syncing.', [
         '@sync' => $syncCount,
-      ]);
+      ])."<br>";
+
+    if ($completedCount > 0) {
+      $text .= "<br>" . t('<strong>@completed</strong> films have had all there data synced.', [
+          '@completed' => $completedCount,
+        ]);
+    }
 
     if ($unsyncCount > 0) {
-      $text .= "<br>" . t('There are also <strong>@unsync</strong> films that we tried to sync but to complete.', [
+      $text .= "<br>" . t('<strong>@unsync</strong> films that we tried to sync but failed to complete.', [
           '@unsync' => $unsyncCount,
         ]);
     }

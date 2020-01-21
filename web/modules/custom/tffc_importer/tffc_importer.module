@@ -1,6 +1,7 @@
 <?php
 
 define('TFFC_IMPORT_ENABLED', FALSE);
+define('TFFC_IMPORT_SYNC', FALSE);
 define('TFFC_IMPORT_CRON_AMOUNT', 1);
 define('TFFC_IMPORT_DEFAULT_LAST_ID', 'tt00000001');
 define('TFFC_IMPORT_DEFAULT_VOTES', '1000');
@@ -12,13 +13,14 @@ define('TFFC_IMPORT_DEFAULT_RELEASE', '1960-01-01');
  * hook_cron
  */
 function tffc_importer_cron() {
+  $watchdog = \Drupal::logger('tffc_importer');
   $tffc_config = \Drupal::config('tffc_importer.settings');
   $importer_enabled = $tffc_config->get('enabled') ?? TFFC_IMPORT_ENABLED;
+  $sync_enabled = $tffc_config->get('sync') ?? TFFC_IMPORT_SYNC;
   $import_amount = $tffc_config->get('import_amount') ?? TFFC_IMPORT_CRON_AMOUNT;
 
   // if enabled import one
   if ($importer_enabled) {
-    $watchdog = \Drupal::logger('tffc_importer');
 
     /**
      * @var \Drupal\tffc_importer\Services\TffcImporter
@@ -53,6 +55,36 @@ function tffc_importer_cron() {
         }
       }
 
+    }
+  }
+
+  if ($sync_enabled) {
+    $TffcSync = \Drupal::service('tffc.sync');
+    $sync = $TffcSync->getSyncableFilms();
+    if (!empty($sync) && count($sync) > 0) {
+      foreach ($sync as $nid) {
+
+        $response = $TffcSync->syncInformation($nid);
+        if (!empty($response)) {
+          $errors = $response->getErrors();
+          $success = $response->getSuccess();
+
+          if (!empty($errors)) {
+            foreach ($errors as $e) {
+              $watchdog->error($e);
+            }
+          }
+
+          if (!empty($success)) {
+            foreach ($success as $s) {
+              $watchdog->info($s);
+            }
+          }
+        }
+      }
+    }
+    else {
+      $watchdog->info("Nothing to sync.");
     }
   }
 }

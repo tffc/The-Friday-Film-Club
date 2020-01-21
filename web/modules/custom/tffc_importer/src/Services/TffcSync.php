@@ -70,11 +70,24 @@ class TffcSync {
   }
 
   /**
+   * Gets all films in the system
+   *
+   * @return array|int
+   */
+  public function getCompletedFilms() {
+    $query = \Drupal::entityQuery('node')
+      ->condition('type', 'film')
+      ->condition('field_complete', TRUE);
+
+    return $query->execute();
+  }
+
+  /**
    * A list of all films that cannot be sync'ed
    *
    * @return array|int
    */
-  public function getUnsyncableFilms(){
+  public function getUnsyncableFilms() {
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'film')
       ->condition('field_validated', FALSE)

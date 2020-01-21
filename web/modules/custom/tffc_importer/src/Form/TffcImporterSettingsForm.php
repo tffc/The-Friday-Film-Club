@@ -46,6 +46,13 @@ class TffcImporterSettingsForm extends ConfigFormBase {
       '#default_value' => $tffc_config->get('enabled') ?? TFFC_IMPORT_ENABLED,
     ];
 
+    $form['general']['sync'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Enable Syncing'),
+      '#description' => t('Flag to enable/disable syncing on cron.'),
+      '#default_value' => $tffc_config->get('sync') ?? TFFC_IMPORT_SYNC,
+    ];
+
     $form['general']['import_amount'] = [
       '#type' => 'number',
       '#min' => 0,
@@ -131,6 +138,7 @@ class TffcImporterSettingsForm extends ConfigFormBase {
 
     $this->config('tffc_importer.settings')
       ->set('enabled', $values['enabled'])
+      ->set('sync', $values['sync'])
       ->set('import_amount', $values['import_amount'])
       ->set('omdb_key', $values['omdb_key'])
       ->set('last_id', $values['last_id'])

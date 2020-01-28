@@ -26,6 +26,11 @@ class ValidationController extends ControllerBase {
    */
   private $field_invalidators = 'field_invalid_user';
 
+  /**
+   * Field that holds the reasons why a user marked a film invalid
+   *
+   * @var string
+   */
   private $field_reasons = 'field_invalid_reasons';
 
   /**

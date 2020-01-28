@@ -1,0 +1,60 @@
+<?php
+
+/**
+ * @file
+ * Contains tffc_validation.module.
+ */
+
+
+/**
+ * Implements hook_theme().
+ *
+ * @return mixed
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ */
+function tffc_validation_theme() {
+  $info['validation_options'] = [
+    'variables' => [
+      'film_id' => 326,
+      'validation_message' => t('Please check all the information (image, film, hints, etc...) are correct.'),
+      'success_text' => t('Looks good'),
+      'skip_text' => t('Skip'),
+      'issues_text' => t('Has issues'),
+      'issues_list' => _tffc_validation_get_issues_list(),
+    ],
+  ];
+  return $info;
+}
+
+/**
+ * Returns a the issue list
+ *
+ * @return string
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ */
+function _tffc_validation_get_issues_list() {
+  $output = "";
+
+  $vid = 'invalid_reasons';
+  $term_data = [];
+
+  $terms = \Drupal::entityTypeManager()
+    ->getStorage('taxonomy_term')
+    ->loadTree($vid);
+  foreach ($terms as $term) {
+    $term_data[] = [
+      'id' => $term->tid,
+      'name' => $term->name,
+    ];
+  }
+
+  if ($term_data) {
+    foreach ($term_data as $term) {
+      $output .= "<li><a href='/validation/326/skip/" . $term['name'] . "'>" . $term['name'] . "</a></li>";
+    }
+  }
+
+  return $output;
+}

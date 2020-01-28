@@ -1,0 +1,20 @@
+<div class="validation-options alert alert-info">
+  <div class="row">
+    <div class="col-md-7">
+      <p>{{ validation_message }}</p>
+    </div>
+    <div class="col-md-5">
+      <a href="/validation/{{ film_id }}/success" class="btn btn-primary">{{ success_text }}</a>
+      <div class="btn-group">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+          {{ issues_text }} <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          {{ issues_list | raw }}
+        </ul>
+      </div>
+      <a href="/validation/{{ film_id }}/skip" class="btn btn-primary">{{ skip_text }}</a>
+    </div>
+  </div>
+</div>

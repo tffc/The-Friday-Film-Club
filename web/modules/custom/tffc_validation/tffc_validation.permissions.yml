@@ -1,0 +1,7 @@
+configure tffc validation:
+  title: 'Configure TFFC Validation'
+  description: 'Allows configuration of settings for The Friday Film Club Validator'
+  restrict access: TRUE
+use tffc validation:
+  title: 'Use TFFC Validation'
+  description: 'Use The Friday Film Club validator'

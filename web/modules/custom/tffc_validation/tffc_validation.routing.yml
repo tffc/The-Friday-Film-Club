@@ -1,0 +1,42 @@
+tffc_validation.config:
+  path: '/admin/config/system/tffc/validation'
+  defaults:
+    _form: '\Drupal\tffc_validation\Form\TffcValidationSettingsForm'
+    _title: 'The Friday Film Club Validation'
+  requirements:
+    _permission: 'configure tffc validation'
+
+tffc_validation.success:
+  path: '/validation/{node}/success'
+  defaults:
+    _controller: '\Drupal\tffc_validation\Controller\ValidationController::success'
+  requirements:
+    _permission: 'use tffc validation'
+  options:
+    parameters:
+      node:
+        type: entity:node
+
+tffc_validation.skip:
+  path: '/validation/{node}/skip'
+  defaults:
+    _controller: '\Drupal\tffc_validation\Controller\ValidationController::skip'
+  requirements:
+    _permission: 'use tffc validation'
+  options:
+    parameters:
+      node:
+        type: entity:node
+
+tffc_validation.issue:
+  path: '/validation/{node}/status/{term}'
+  defaults:
+    _controller: '\Drupal\tffc_validation\Controller\ValidationController::issue'
+  requirements:
+    _permission: 'use tffc validation'
+  options:
+    parameters:
+      node:
+        type: entity:node
+      term:
+        type: entity:taxonomy

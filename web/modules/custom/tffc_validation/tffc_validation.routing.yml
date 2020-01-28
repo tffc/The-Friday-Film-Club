@@ -39,4 +39,11 @@ tffc_validation.issue:
       node:
         type: entity:node
       term:
-        type: entity:taxonomy
+        type: entity:taxonomy_term
+
+tffc_validation.page:
+  path: '/validation'
+  defaults:
+    _controller: '\Drupal\tffc_validation\Controller\ValidationController::page'
+  requirements:
+    _permission: 'use tffc validation'

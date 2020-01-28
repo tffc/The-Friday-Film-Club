@@ -11,7 +11,9 @@
           {{ issues_text }} <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
-          {{ issues_list | raw }}
+          {% for key, value in issues_list %}
+            <li><a href="/validation/{{ film_id }}/status/{{ value['#id'] }}">{{ value['#name'] }}</a></li>
+          {% endfor %}
         </ul>
       </div>
       <a href="/validation/{{ film_id }}/skip" class="btn btn-primary">{{ skip_text }}</a>

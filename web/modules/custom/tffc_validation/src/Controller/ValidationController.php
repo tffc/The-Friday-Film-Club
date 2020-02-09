@@ -6,7 +6,6 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\TermInterface;
-use Drupal\user\Entity\User;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -25,6 +24,14 @@ class ValidationController extends ControllerBase {
    * @var string
    */
   private $field_invalidators = 'field_invalid_user';
+
+
+  /**
+   * Field that holds a list of users that marked as skipped
+   *
+   * @var string
+   */
+  private $field_skip = 'field_skipped_validation';
 
   /**
    * Field that holds the reasons why a user marked a film invalid
@@ -53,6 +60,8 @@ class ValidationController extends ControllerBase {
   }
 
   /**
+   * Mark this film as passing validation
+   *
    * @param \Drupal\node\NodeInterface $node
    * @param \Symfony\Component\HttpFoundation\Request $request
    *
@@ -80,6 +89,8 @@ class ValidationController extends ControllerBase {
   }
 
   /**
+   * Mark this film as skipped
+   *
    * @param \Drupal\node\NodeInterface $node
    * @param \Symfony\Component\HttpFoundation\Request $request
    *
@@ -88,10 +99,33 @@ class ValidationController extends ControllerBase {
   public function skip(NodeInterface $node, Request $request) {
     $this->is_type_film($node);
 
+    if ($this->has_already_validated($node)) {
+      \Drupal::messenger()
+        ->addStatus(t('You have already validated this film.'));
+      return $this->redirect_back();
+    }
+
+    $node->{$this->field_skip}[] = ['target_id' => $this->current_uid()];
+    try {
+      $node->save();
+    } catch (EntityStorageException $e) {
+      die($e->getMessage());
+    }
+
+    \Drupal::messenger()->addStatus(t('You have skipped validating the film.'));
     return $this->redirect_back();
   }
 
 
+  /**
+   * Mark this film as having an issue
+   *
+   * @param \Drupal\node\NodeInterface $node
+   * @param \Drupal\taxonomy\TermInterface $term
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *
+   * @return \Symfony\Component\HttpFoundation\RedirectResponse
+   */
   public function issue(NodeInterface $node, TermInterface $term, Request $request) {
     $this->is_type_film($node);
     $this->is_issue_taxonomy($term);
@@ -150,6 +184,12 @@ class ValidationController extends ControllerBase {
 
     $invalidators = $node->get($this->field_invalidators)->getValue();
     $ids = array_column($invalidators, 'target_id', 'target_id');
+    if (isset($ids[$uid])) {
+      return TRUE;
+    }
+
+    $skipped = $node->get($this->field_skip)->getValue();
+    $ids = array_column($skipped, 'target_id', 'target_id');
     if (isset($ids[$uid])) {
       return TRUE;
     }

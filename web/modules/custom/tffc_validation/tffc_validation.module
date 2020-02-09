@@ -5,6 +5,8 @@
  * Contains tffc_validation.module.
  */
 
+define('TFFC_VALIDATION_NUM', 3);
+define('TFFC_VALIDATION_ISSUE_NUM', 3);
 
 /**
  * Implements hook_theme().
@@ -28,7 +30,7 @@ function tffc_validation_theme() {
 }
 
 /**
- * Returns a the issue list
+ * Returns the issue list
  *
  * @return array
  * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException

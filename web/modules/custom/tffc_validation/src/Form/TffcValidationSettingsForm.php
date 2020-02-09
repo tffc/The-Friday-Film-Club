@@ -31,20 +31,30 @@ class TffcValidationSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, Request $request = NULL) {
-//    $tffc_config = $this->config('tffc_validation.settings');
-//
-//    $form['general'] = [
-//      '#type' => 'details',
-//      '#title' => t('General Settings'),
-//      '#open' => TRUE,
-//    ];
-//
-//    $form['general']['enabled'] = [
-//      '#type' => 'checkbox',
-//      '#title' => t('Enabled'),
-//      '#description' => t('Flag to enable/disable importer.'),
-//      '#default_value' => $tffc_config->get('enabled') ?? TFFC_IMPORT_ENABLED,
-//    ];
+    $tffc_config = $this->config('tffc_validation.settings');
+
+    $form['validation'] = [
+      '#type' => 'details',
+      '#title' => t('Validation Settings'),
+      '#open' => TRUE,
+    ];
+
+    $form['validation']['validated_count'] = [
+      '#type' => 'number',
+      '#min' => 0,
+      '#title' => t('Validated count'),
+      '#description' => t('The number of successful validations for a film to be counted as validated.'),
+      '#default_value' => $tffc_config->get('validated_count') ?? TFFC_VALIDATION_NUM,
+    ];
+
+
+    $form['validation']['issues_count'] = [
+      '#type' => 'number',
+      '#min' => 0,
+      '#title' => t('Validated count'),
+      '#description' => t('The number of issues for a film to be counted as invalid.'),
+      '#default_value' => $tffc_config->get('issues_count') ?? TFFC_VALIDATION_ISSUE_NUM,
+    ];
 
 
     return parent::buildForm($form, $form_state);
@@ -57,7 +67,8 @@ class TffcValidationSettingsForm extends ConfigFormBase {
     $values = $form_state->getValues();
 
     $this->config('tffc_validation.settings')
-      ->set('enabled', $values['enabled'])
+      ->set('validated_count', $values['validated_count'])
+      ->set('issues_count', $values['issues_count'])
       ->save();
 
     parent::submitForm($form, $form_state);

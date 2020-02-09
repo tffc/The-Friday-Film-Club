@@ -19,6 +19,20 @@ class ValidationController extends ControllerBase {
   private $field_validators = 'field_validator';
 
   /**
+   * Field that holds if this is valid or not
+   *
+   * @var string
+   */
+  private $field_validated = 'field_validated';
+
+  /**
+   * Field that holds if this is invalid or not
+   *
+   * @var string
+   */
+  private $field_invalid = 'field_invalid';
+
+  /**
    * Field that holds a list of users that marked as invalid
    *
    * @var string
@@ -85,6 +99,9 @@ class ValidationController extends ControllerBase {
 
     \Drupal::messenger()
       ->addStatus(t('Thank you, marked film as valid.'));
+
+    $this->check_if_now_validated($node);
+
     return $this->redirect_back();
   }
 
@@ -101,7 +118,7 @@ class ValidationController extends ControllerBase {
 
     if ($this->has_already_validated($node)) {
       \Drupal::messenger()
-        ->addStatus(t('You have already validated this film.'));
+        ->addMessage(t('You have already validated this film.'));
       return $this->redirect_back();
     }
 
@@ -112,7 +129,7 @@ class ValidationController extends ControllerBase {
       die($e->getMessage());
     }
 
-    \Drupal::messenger()->addStatus(t('You have skipped validating the film.'));
+    \Drupal::messenger()->addWarning(t('You have skipped validating the film.'));
     return $this->redirect_back();
   }
 
@@ -132,7 +149,7 @@ class ValidationController extends ControllerBase {
 
     if ($this->has_already_validated($node)) {
       \Drupal::messenger()
-        ->addStatus(t('You have already validated this film.'));
+        ->addMessage(t('You have already validated this film.'));
       return $this->redirect_back();
     }
 
@@ -146,6 +163,9 @@ class ValidationController extends ControllerBase {
 
     \Drupal::messenger()
       ->addStatus(t('Thank you, marked film as having some issues.'));
+
+    $this->check_if_now_invalid($node);
+
     return $this->redirect_back();
   }
 
@@ -161,11 +181,60 @@ class ValidationController extends ControllerBase {
     return TRUE;
   }
 
+  /**
+   * @param \Drupal\taxonomy\TermInterface $term
+   *
+   * @return bool
+   */
   private function is_issue_taxonomy(TermInterface $term) {
     if ("invalid_reasons" !== $term->bundle()) {
       throw new NotFoundHttpException();
     }
     return TRUE;
+  }
+
+  /**
+   * @param \Drupal\node\NodeInterface $node
+   */
+  private function check_if_now_validated(NodeInterface $node) {
+    $config = \Drupal::config('tffc_validation.settings');
+    $validated_count = $config->get('validated_count') ?? TFFC_VALIDATION_NUM;
+
+    $validators = count($node->{$this->field_validators}->getValue());
+
+    if ($validators >= $validated_count) {
+      $node->{$this->field_validated} = ['value' => TRUE];
+
+      try {
+        $node->save();
+        \Drupal::messenger()
+          ->addStatus(t('This film has now been marked as validated.'));
+      } catch (EntityStorageException $e) {
+        die($e->getMessage());
+      }
+    }
+  }
+
+
+  /**
+   * @param \Drupal\node\NodeInterface $node
+   */
+  private function check_if_now_invalid(NodeInterface $node) {
+    $config = \Drupal::config('tffc_validation.settings');
+    $invalid_count = $config->get('issues_count') ?? TFFC_VALIDATION_ISSUE_NUM;
+
+    $invalidators = count($node->{$this->field_invalidators}->getValue());
+
+    if ($invalidators >= $invalid_count) {
+      $node->{$this->field_invalid} = ['value' => TRUE];
+
+      try {
+        $node->save();
+        \Drupal::messenger()->addWarning(t('This film has now been marked as invalid.'));
+      } catch (EntityStorageException $e) {
+        die($e->getMessage());
+      }
+    }
   }
 
   /**

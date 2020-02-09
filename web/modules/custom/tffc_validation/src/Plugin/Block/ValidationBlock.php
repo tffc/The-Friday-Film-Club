@@ -21,7 +21,7 @@ class ValidationBlock extends BlockBase {
    */
   public function build() {
     $id = $this->get_film_id();
-    if($id) {
+    if ($id) {
       return [
         '#theme' => 'validation_options',
         '#film_id' => $id,
@@ -39,9 +39,11 @@ class ValidationBlock extends BlockBase {
    */
   private function get_film_id() {
     $nid = \Drupal::routeMatch()->getParameter('nid');
-    $node = Node::load($nid);
-    if ($node && $node->bundle() === "film") {
-      return $nid;
+    if ($nid) {
+      $node = Node::load($nid);
+      if ($node && $node->bundle() === "film") {
+        return $nid;
+      }
     }
     return FALSE;
   }

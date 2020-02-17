@@ -1,0 +1,6 @@
+tffc_validation:
+  config:
+  route_name: tffc_validation.config
+  title: 'The Friday Film Club Validator'
+  description: 'Configure the validation options'
+  parent: system.admin_config_system

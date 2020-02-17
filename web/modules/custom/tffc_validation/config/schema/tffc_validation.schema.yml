@@ -1,0 +1,11 @@
+tffc_validation.settings:
+  type: config_object
+  label: 'TFFC Validation Settings'
+  mapping:
+    validated_count:
+      type: string
+      label: 'The validated count number'
+    issues_count:
+      type: string
+      label: 'The issues count number'
+

@@ -1,0 +1,7 @@
+services:
+  tffc.importer:
+    class: Drupal\tffc_importer\Services\TffcImporter
+  tffc.sync:
+    class: Drupal\tffc_importer\Services\TffcSync
+  tffc.screencaps:
+    class: Drupal\tffc_importer\Services\MovieScreencaps

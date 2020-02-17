@@ -1,0 +1,6 @@
+tffc_importer:
+  config:
+  route_name: tffc_importer.config
+  title: 'The Friday Film Club Importer'
+  description: 'Configure how and when to import films'
+  parent: system.admin_config_system

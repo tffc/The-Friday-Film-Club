@@ -1,0 +1,31 @@
+tffc_importer.config:
+  path: '/admin/config/system/tffc/importer'
+  defaults:
+    _form: '\Drupal\tffc_importer\Form\TffcImporterSettingsForm'
+    _title: 'The Friday Film Club Importer'
+  requirements:
+    _permission: 'configure tffc importer'
+
+tffc_importer.batch:
+  path: '/admin/config/system/tffc/importer/batch'
+  defaults:
+    _form: '\Drupal\tffc_importer\Form\TffcImporterBatchForm'
+    _title: 'The Friday Film Club Batch Importer'
+  requirements:
+    _permission: 'configure tffc importer'
+
+tffc_importer.sync:
+  path: '/admin/config/system/tffc/importer/sync'
+  defaults:
+    _form: '\Drupal\tffc_importer\Form\TffcImporterSyncBatchForm'
+    _title: 'The Friday Film Club Batch Sync'
+  requirements:
+    _permission: 'configure tffc importer'
+
+tffc_importer.test_page:
+  path: '/tffc/importer/test'
+  defaults:
+    _controller: '\Drupal\tffc_importer\Controller\TestController::testPage'
+    _title: 'The Friday Film Club Test Page'
+  requirements:
+    _permission: 'access content'

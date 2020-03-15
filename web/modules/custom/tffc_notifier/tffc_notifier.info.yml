@@ -3,4 +3,4 @@ description: 'Sends out notification emails when new question is added'
 type: module
 core: 8.x
 package: The Friday Film Club
-configure: tffc_importer.config
+configure: tffc_notifier.config

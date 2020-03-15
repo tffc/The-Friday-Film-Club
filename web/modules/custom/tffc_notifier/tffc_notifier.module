@@ -1,0 +1,138 @@
+<?php
+/**
+ *
+ */
+
+use Drupal\node\Entity\Node;
+use  \Drupal\user\Entity\User;
+
+define('TFFC_NOTIFIER_ENABLED', FALSE);
+
+/**
+ * Implements hook_entity_presave().
+ */
+function tffc_notifier_entity_presave(Drupal\Core\Entity\EntityInterface $entity) {
+  $bundle = $entity->bundle();
+  // only for question entities
+  if ($bundle === "question") {
+
+    $original = $entity->original ?? FALSE;
+
+    // look for the notifier flag
+    $notifier = (int) $entity->get('field_tffc_notifier')->value;
+
+    if ($notifier === 0) {
+
+      // check for the original and check to see if the state has moved from
+      // unpublished to published
+      if ($original) {
+        $sendNotification = !$original->isPublished() && $entity->isPublished();
+      }
+      else {
+        $sendNotification = $entity->isPublished();
+      }
+
+      // if found lets send the notifications
+      if ($sendNotification) {
+        _tffc_notifier_send_emails($entity->id());
+        $entity->set('field_tffc_notifier', TRUE);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_mail().
+ */
+function tffc_notifier_mail($key, &$message, $params) {
+  $token_service = \Drupal::token();
+  $tffc_config = \Drupal::config('tffc_notifier.settings');
+  $langcode = $message['langcode'];
+
+  $variables = ['user' => $params['user'], 'node' => $params['node']];
+  $token_options = [
+    'langcode' => $langcode,
+    'callback' => 'tffc_notifier_tokens',
+    'clear' => TRUE,
+  ];
+
+  $subject = $tffc_config->get('subject') ?? 'No subject set';
+  $body = $tffc_config->get('message') ?? ['value' => 'Missing body'];
+
+  $subject = $token_service->replace($subject, $variables, $token_options);
+  $body['value'] = $token_service->replace($body['value'], $variables, $token_options);
+
+  switch ($key) {
+    case 'send_notifier':
+      $message['from'] = \Drupal::config('system.site')->get('mail');
+      $message['subject'] = $subject;
+      $message['body'][] = $body['value'];
+      break;
+  }
+}
+
+/**
+ * Sends all the emails
+ */
+function _tffc_notifier_send_emails($nid) {
+  // the emails to send
+  $uids = [];
+  $emails = [];
+
+  $watchdog = \Drupal::logger('tffc_notifier');
+  $tffc_config = \Drupal::config('tffc_notifier.settings');
+  $roles = $tffc_config->get('roles') ?? [];
+  $roles = array_filter($roles);
+
+  // look for the users by roles
+  if (!empty($roles)) {
+    $uids = \Drupal::entityQuery('user')
+      ->condition('status', 1)
+      ->condition('roles', $roles, 'IN')
+      ->execute();
+  }
+
+  // if we can find the uids
+  // load the users and extract the emails
+  if (!empty($uids)) {
+    $users = User::loadMultiple($uids);
+    if (!empty($users)) {
+      foreach ($users as $user) {
+        $email = $user->getEmail();
+        if ($email) {
+          $emails[] = ['email' => $user->getEmail(), 'account' => $user];
+        }
+      }
+    }
+  }
+
+  // if we have emails address
+  // lets send them out!
+  if (!empty($emails)) {
+    $mailManager = \Drupal::service('plugin.manager.mail');
+    $module = 'tffc_notifier';
+    $key = 'send_notifier';
+    $langcode = \Drupal::currentUser()->getPreferredLangcode();
+    $send = TRUE;
+
+    $params['node'] = Node::load($nid);
+
+    foreach ($emails as $email) {
+      $params['user'] = $email['account'];
+      $result = $mailManager->mail($module, $key, $email['email'], $langcode, $params, NULL, $send);
+      if ($result['result'] !== TRUE) {
+        $watchdog->error(t("There was a problem sending an email to @email.", ['@email' => $email]));
+      }
+    }
+  }
+
+}
+
+/**
+ * Token callback to add unsafe tokens for user mails.
+ *
+ * @see user_mail_tokens
+ */
+function tffc_notifier_tokens(&$replacements, $data, $options) {
+
+}

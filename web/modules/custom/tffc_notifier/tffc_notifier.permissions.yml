@@ -1,0 +1,4 @@
+configure tffc notifier:
+  title: 'Configure TFFC Notifier'
+  description: 'Allows configuration of settings for The Friday Film Club Notifier'
+  restrict access: TRUE

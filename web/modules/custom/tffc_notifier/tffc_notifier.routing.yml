@@ -1,0 +1,7 @@
+tffc_notifier.config:
+  path: '/admin/config/system/tffc/notifier'
+  defaults:
+    _form: '\Drupal\tffc_notifier\Form\TffcNotifierSettingsForm'
+    _title: 'The Friday Film Club Notifier'
+  requirements:
+    _permission: 'configure tffc notifier'

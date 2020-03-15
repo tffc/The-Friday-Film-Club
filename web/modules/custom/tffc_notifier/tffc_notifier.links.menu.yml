@@ -1,0 +1,6 @@
+tffc_notifier:
+  config:
+  route_name: tffc_notifier.config
+  title: 'The Friday Film Club Notifier'
+  description: 'Configure the notification settings'
+  parent: system.admin_config_system

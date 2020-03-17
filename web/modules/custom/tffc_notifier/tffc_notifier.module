@@ -33,8 +33,9 @@ function tffc_notifier_entity_presave(Drupal\Core\Entity\EntityInterface $entity
       }
 
       // if found lets send the notifications
-      if ($sendNotification) {
-        _tffc_notifier_send_emails($entity->id());
+      $nid = $entity->id();
+      if ($sendNotification && $nid) {
+        _tffc_notifier_send_emails($entity);
         $entity->set('field_tffc_notifier', TRUE);
       }
     }
@@ -73,8 +74,10 @@ function tffc_notifier_mail($key, &$message, $params) {
 
 /**
  * Sends all the emails
+ *
+ * @param $entity
  */
-function _tffc_notifier_send_emails($nid) {
+function _tffc_notifier_send_emails($entity) {
   // the emails to send
   $uids = [];
   $emails = [];
@@ -115,7 +118,7 @@ function _tffc_notifier_send_emails($nid) {
     $langcode = \Drupal::currentUser()->getPreferredLangcode();
     $send = TRUE;
 
-    $params['node'] = Node::load($nid);
+    $params['node'] = $entity;
 
     foreach ($emails as $email) {
       $params['user'] = $email['account'];

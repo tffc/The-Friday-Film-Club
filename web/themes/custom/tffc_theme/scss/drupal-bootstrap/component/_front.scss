@@ -1,4 +1,5 @@
 .path-frontpage {
+	background:rgb(0, 4, 49) url(../images/film-bg.jpg) top center / cover;
 	.homepage {
 		@media all and (min-width:992px) {
 			width:50%;
@@ -30,7 +31,7 @@
 
 .neon-flicker-sign {
  // text-align: center;
-  font-family: 'Monoton', sans-serif;
+  font-family: $font-sign;
   font-size:60px;
   //color: #FFD5FF;
   color:#b8f9ff;

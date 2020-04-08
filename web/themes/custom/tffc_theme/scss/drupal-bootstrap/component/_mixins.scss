@@ -1,0 +1,63 @@
+// Mixin for breakpoints
+// Usage example: @include bp(xs)
+@mixin bp($point) {
+  @if $point == xxs {
+    @media #{$bp-xxs} { @content; }
+  }
+  @if $point == xs {
+    @media #{$bp-xs} { @content; }
+  }
+  @else if $point == sm {
+    @media #{$bp-sm} { @content; }
+  }
+  @else if $point == md {
+    @media #{$bp-md}  { @content; }
+  }
+  @else if $point == lg {
+    @media #{$bp-lg}  { @content; }
+  }
+  @else if $point == xlg {
+    @media #{$bp-xlg}  { @content; }
+  }
+  @else if $point == md_only {
+    @media #{$bp-md-max} and #{$bp-sm} { @content; }
+  }
+  @else if $point == md_max {
+    @media #{$bp-md-max} { @content; }
+  }
+}
+
+// Mixin to prefix a property
+// Usage example: @include prefix(transform, rotate(45deg));
+@mixin prefix($property, $val){
+  -webkit-#{$property}: $val;
+  -moz-#{$property}: $val;
+  -ms-#{$property}: $val;
+  #{$property}: $val;
+}
+
+// Mixin for place
+@mixin placeholder(){
+  &::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    @content;
+  }
+  &::-moz-placeholder { /* Firefox 19+ */
+    @content;
+  }
+  &:-ms-input-placeholder { /* IE 10+ */
+    @content;
+  }
+  &:-moz-placeholder { /* Firefox 18- */
+    @content;
+  }
+}
+
+// Convert px to rems
+@function calculateRem($size) {
+  $remSize: $size / 16px;
+  @return #{$remSize}rem;
+}
+@mixin fontSize($size) {
+  //font-size: $size; //Fallback in px
+  font-size: calculateRem($size);
+}

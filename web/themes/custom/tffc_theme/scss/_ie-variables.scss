@@ -1,4 +1,17 @@
+//== Breakpoints
+$bp-xxs: "(max-width: 500px)";
+$bp-xs: "(max-width: 767px)";
+$bp-sm: "(min-width: 768px)";
+$bp-md: "(min-width: 992px)";
+$bp-lg: "(min-width: 1200px)";
+$bp-xlg: "(min-width: 1600px)";
+$bp-md-max: "(max-width: 991px)";
+
 $brand-primary: #0C0440;
 $purple: #4E35F2;
 $dark-pink: #dc2ea5;
 $pink: #e85da4;
+
+$font-sign:'Monoton', sans-serif;
+$font-main:'Basier Mono', sans-serif;
+$font-heading:'Monument', sans-serif;

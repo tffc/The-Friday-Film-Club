@@ -18,14 +18,29 @@
 	margin-bottom:30px;
 }
 
-.page-header {
+h1.page-header {
 	border:0;
+	text-transform: uppercase;
+	text-align:center;
+	margin-top: 0;
+  	margin-bottom:35px;
+  	display:block;
+  	@include bp(lg) {
+  		margin-bottom:50px;
+  	}
 }
 
 .path-leaderboard {
+	background-image:url(../images/hqdefault.jpg);
+	&:before {
+		background-color:rgba(0, 4, 49, 0.5);
+	}
 	.page-header {
 		font-weight:bold;
-		text-transform: uppercase;
-		text-align:center;
 	}
 }
+
+.region-content {
+	padding-bottom:120px;
+}
+

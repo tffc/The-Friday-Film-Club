@@ -6,3 +6,33 @@
  *
  * Place your custom PHP code in this file.
  */
+
+use Drupal\block\Entity\Block;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\file\Entity\File;
+use Drupal\media\Entity\Media;
+use Drupal\image\Entity\ImageStyle;
+use Drupal\views\Views;
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter().
+ */
+function ie_bootstrap_theme_suggestions_page_alter(array &$suggestions, array $variables) {
+  // Get Request Object.
+  $request = \Drupal::request();
+  $node = $request->attributes->get('node');
+  // If there is HTTP Exception..
+  if ($exception = $request->attributes->get('exception')) {
+    // Get the status code.
+    $status_code = $exception->getStatusCode();
+    if (in_array($status_code, array(401, 403, 404))) {
+      $suggestions[] = 'page__' . $status_code;
+    }
+  }
+  //https://www.drupal.org/node/2521876#comment-10684366
+  if ($node = \Drupal::request()->attributes->get('node')) {
+  	var_dump($node->getType());
+  	var_dump('test');
+    array_splice($suggestions, 1, 0, 'page__node__' . $node->getType());
+  }
+}

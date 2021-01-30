@@ -29,12 +29,14 @@
 			background-color:transparent;
 			border:2px solid #fff;
 			border-radius:0;
+			color:#fff;
 		}
 		.input-group-addon {
 			border-radius: 0;
     		background-color: rgba(255,255,255,0.1);
     		border-color:#fff;
-    		.icon {
+    		border-width:2px;
+    		.icon.glyphicon {
     			color:#fff;
     		}
 		}
@@ -44,6 +46,16 @@
 		img {
 			width:100%;
 		}
+	}
+	.field--name-field-hint {
+		margin:20px 0 10px 0;
+		border-radius:10px;
+		border:2px solid #fd70d1;
+		padding:12px 15px;
+  		box-shadow: 0px 0px 35px rgba(220, 46, 165, 0.1), 0 0 11px rgba(220, 46, 165, 0.3), 0 0 2px rgba(255, 0, 0, 0.1), 0 0 1px rgba(220, 46, 165, 0.2), 0 0px 17px rgba(220, 46, 165, 0.3), inset 0px 0 17px rgba(220, 46, 165, 0.2), inset 0px 0 30px rgba(220, 46, 165, 0.1);
+	}
+	.field--name-field-answer {
+		text-decoration: line-through;
 	}
 }
 

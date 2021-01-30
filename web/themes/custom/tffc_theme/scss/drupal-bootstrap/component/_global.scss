@@ -34,6 +34,10 @@ body {
 
 a {
 	color:#fff;
+	&:hover,
+	&:focus {
+		color:#fff;
+	}
 }
 
 a,
@@ -63,13 +67,21 @@ article {
 			margin-bottom:25px;
 			font-weight:600;
 		}
-		p,ul {
+		p,ul,ol {
 			color:rgba(255,255,255,0.8);
 			font-size:20px;
 			line-height:1.75;
 			margin-bottom:30px;
 			.btn {
 				margin-top:15px;
+			}
+		}
+		ol {
+			li {
+				margin-bottom:20px;
+			}
+			a {
+				text-decoration: underline;
 			}
 		}
 	}

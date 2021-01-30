@@ -58,7 +58,7 @@ class TffcSettingsForm extends ConfigFormBase {
     $form['replies_good'] = [
       '#type' => 'details',
       '#title' => t('Positive responses'),
-      '#description' => t('The responses that will be selected at random if the the correct answer is selected.'),
+      '#description' => t('The responses that will be selected at random if the correct answer is selected.'),
       '#open' => FALSE,
     ];
 

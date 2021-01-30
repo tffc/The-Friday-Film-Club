@@ -107,7 +107,9 @@
   border: 2px solid #000;
   //box-shadow: 0px 0px 35px rgba(220, 46, 165, 0.3), 0 0 11px rgba(220, 46, 165, 0.3), 0 0 2px rgba(255, 0, 0, 0.3), 0 0 1px rgba(220, 46, 165, 0.3), 0 0px 17px rgba(220, 46, 165, 0.3), inset 0px 0 17px rgba(220, 46, 165, 0.3), inset 0px 0 30px rgba(220, 46, 165, 0.3);
   //border-radius: 15px;
-  font-size: 21px;
+  @include bp(md) {
+    font-size: 21px;
+  }
   a {
     color:#000;
   }
@@ -116,8 +118,16 @@
     background-color:#fff;
   }
   .table {
+    margin-bottom:0;
     th {
       border-color:#000;
+    }
+    tr {
+      background-color:#fff;
+      &:hover,
+      &:nth-of-type(odd) {
+        background-color:#fff;
+      }
     }
     th, td {
       padding:15px;
@@ -140,15 +150,25 @@
       font-size:22px;
       margin-bottom:30px;
     }
+    a:not(.btn) {
+      box-shadow:inset 0 -1px 0 0 #fff;
+      &:hover,
+      &:focus {
+        text-decoration: none;
+      }
+    }
   }
 }
+
 #user-login-form,
-#user-pass {
+#user-pass,
+#user-register-form {
   background:transparent;
   box-shadow:none;
   border:0;
   max-width:420px;
-  .form-text {
+  .form-text,
+  .form-email {
     background:none;
     border: 0;
     box-shadow:none;
@@ -173,9 +193,13 @@
     padding-left:0;
     display:block;
     .control-label {
-      font-size:0;
-      visibility: hidden;
       position:absolute;
+      top:0;
+      transition:all 0.15s ease-in-out;
+      &.focus {
+        font-size:12px;
+        top:-15px;
+      }
     }
   }
   .form-submit {
@@ -214,3 +238,46 @@
     color: #fff;
   }
 }
+
+.login-title {
+  display:none;
+}
+
+.back-to-login {
+  a {
+    
+  }
+}
+
+#user-register-form,
+#user-pass {
+  .form-actions {
+    text-align:center;
+    margin:0 0 40px 0;
+  }
+  .back-to-login {
+    text-align:center;
+    float:none;
+    margin: 35px 0 18px 0;
+    font-size: inherit;
+  }
+}
+
+#user-login-form {
+  .actions-suffix {
+    @include bp(xs) {
+      float: none;
+      position: static;
+      text-align: center;
+      margin-top: 35px;
+    }
+  }
+  .form-actions {
+    @include bp(xs) {
+      margin-left: 0;
+      text-align: center;
+    }
+  }
+}
+
+
